@@ -1,2 +1,2 @@
 # Theta-Battle-Tool
-A simple fan battle creation tool for Deltarune.
+A simple fan battle creation tool for Deltarune. Made with LÖVE
