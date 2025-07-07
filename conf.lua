@@ -1,0 +1,9 @@
+function love.conf(t)
+    t.window.title = "Delting It"        -- Game window title
+    t.window.width = 1280             -- Window width
+    t.window.height = 960             -- Window height
+    t.window.fullscreen = false       -- Fullscreen mode (false for windowed)
+    t.window.vsync = true             -- Enable vertical sync
+    t.window.resizable = false         -- Make the window resizable
+    t.window.highdpi = true           -- Enable high DPI mode for retina displays
+end
