@@ -25,7 +25,7 @@ end
 
 function Submenu:updatePosArray(posarray)
     self.positions = posarray
-    print("hey")
+    print("Submenu position array updated")
     print(#self.positions)
     print(self.positions[1])
 end
