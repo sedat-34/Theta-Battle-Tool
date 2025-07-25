@@ -37,6 +37,8 @@ function PartyMember:new(name, xpos, ypos, animations, defaultframe, defaultanim
 
     end
 
+    self.isdefending = false
+
     self.animationsfromstate = { --When a string is passed into set_animation(), these are checked to convert into a numerical value
         ["ATTACKUI"] = 6,
         ["ACTUI"] = 7,
@@ -105,9 +107,13 @@ function PartyMember:animate(dt)
 
 end
 
-function PartyMember:attack(local_enemy)
+function PartyMember:attack(local_enemy, mult)
+
+    local local_enemy = local_enemy
+
     love.audio.play(SND_ATTACK)
     print(self.name.." attacked "..local_enemy.name)
+
     local selectedEnemyIndex
 
     for i = 1, #enemies do
@@ -127,9 +133,10 @@ function PartyMember:attack(local_enemy)
             end
         end
     end
+
     if local_enemy then
         print("Attacked enemy "..selectedEnemyIndex)
-        local_enemy:hurt(self.ATK*3)
+        local_enemy:hurt(self.ATK*mult)
         self.currentanimation = 1
         self.currentframecount = 1
     else
@@ -138,9 +145,18 @@ function PartyMember:attack(local_enemy)
     end
 end
 
+function PartyMember:update(dt)
+    if current_state == "BATTLEUI" and self.isdefending then
+        self.isdefending = false
+        self:set_animation(0)
+    end
+    self:animate(dt)
+end
+
 function PartyMember:act(local_enemy, actname, ui)
     print(self.name.." acted together with "..local_enemy.name)
     print("Current act: "..actname)
+    self:set_animation(2)
     local_enemy.mercyup = local_enemy.mercytable[actname]
     local_enemy:act(actname, ui) --Lets local_enemy handle the act
 end

@@ -3,6 +3,7 @@ Object = require "classic"
 require "partyMember"
 require "background"
 require "battleui"
+require "battlebar"
 require "soul"
 require "submenu"
 require "mizzle"
@@ -32,9 +33,10 @@ ARR_STATES = { --UI Buttons to states as used in current_state
 current_state = nil --Used to keep track of what's currently going on. Example: "ATTACKING"
 selected_enemy = nil
 
-local PartyMembers = {}
-local MembersToAttack = {}
-local EnemiesToAttack = {}
+party_members = {}
+members_to_attack = {}
+enemies_to_attack = {}
+battlebars = {}
 
 local actname = {}
 local actindex = {}
@@ -45,13 +47,15 @@ local actindex = {}
 
 --Arrays used for submenus:
 enemies = {}
-local SelectedEnemies = {}
-local actsubsubs = {}
+local selected_enemies = {}
+local act_sub_subs = {}
 
 local Commands = {}
 
 local kris_1
 local kris_2
+
+local barry --barry the bar
 
 local mizzle_1
 local mizzle_2
@@ -75,7 +79,7 @@ function love.load()
     }
 
     local kris_buttons = { --Generally FIGHT/ACT/ITEM/SPARE/DEFEND but I used ATTACK for some reason
-                          --And because it's written all over the code I can't change it anymore
+                           --And because it's written all over the code I can't change it anymore
         [1] = {"attack"},
         [2] = {"act"},
         [3] = {"item"},
@@ -83,27 +87,29 @@ function love.load()
         [5] = {"defend"},
     }
 
-    kris_1 = PartyMember("kris_1", 100, 202, kris_anims, "krisplace.png", 0, 4, 203, 125, 10)
+    kris_1 = PartyMember("Kris1", 100, 202, kris_anims, "krisplace.png", 0, 4, 203, 35, 10)
     kris_1:set_animation("ATTACK")
 
-    kris_2 = PartyMember("kris_2", 100, 402, kris_anims, "krisplace.png", 0, 4, 203, 125, 10)
+    kris_2 = PartyMember("Kris2", 100, 402, kris_anims, "krisplace.png", 0, 4, 203, 35, 10)
     kris_2:set_animation(1)
 
-    PartyMembers = {
+    party_members = {
         kris_1,
         kris_2,
     }
 
-    for i = 1, #PartyMembers do
+    barry = BattleBar(1000, 0, 1)
+
+    for i = 1, #party_members do
         Commands[i] = {}
     end
 
-    KrisUI1 = BattleUi("kris_1", "kris", "kris", kris_buttons, 308, 630, 1)
-    KrisUI2 = BattleUi("kris_2", "kris", "kris", kris_buttons, 628, 630, 2)
+    Kris1UI = BattleUi("Kris1", "kris", "kris", kris_buttons, 308, 630, 1)
+    Kris2UI = BattleUi("Kris2", "kris", "kris", kris_buttons, 628, 630, 2)
 
     UIs = {
-        KrisUI1,
-        KrisUI2,
+        Kris1UI,
+        Kris2UI,
     }
 
     current_party_member = 1
@@ -139,7 +145,7 @@ function love.load()
         [3] = {"* "..enemies[3].name, 218, 851},
     }
 
-    actsubsubs = { --ACT -> enemies[i] -> These show up
+    act_sub_subs = { --ACT -> enemies[i] -> These show up
                    --Even if enemies[i] changes, it looks for the original memory adress
 
         [enemies[1]] = { --Handle these in enemies[1]:act(actname)
@@ -159,9 +165,9 @@ function love.load()
 
     Enemysub = Submenu(Enemysubarray, {"ATTACKUI", "ACTUI", "SPAREUI"}, nil)
 
-    Mizzle1sub = Submenu(actsubsubs[enemies[1]], {"ACTSUBSUB"}, enemies[1])
-    Mizzle2sub = Submenu(actsubsubs[enemies[2]], {"ACTSUBSUB"}, enemies[2])
-    Mizzle3sub = Submenu(actsubsubs[enemies[3]], {"ACTSUBSUB"}, enemies[3])
+    Mizzle1sub = Submenu(act_sub_subs[enemies[1]], {"ACTSUBSUB"}, enemies[1])
+    Mizzle2sub = Submenu(act_sub_subs[enemies[2]], {"ACTSUBSUB"}, enemies[2])
+    Mizzle3sub = Submenu(act_sub_subs[enemies[3]], {"ACTSUBSUB"}, enemies[3])
 
     --Load fonts!
     Battlefont = love.graphics.newFont("fonts/8bitOperatorPlus-Bold.ttf", 28)
@@ -209,9 +215,16 @@ function love.update(dt)
         end
     end
 
-    for i = 1, #PartyMembers do
-        PartyMembers[i]:animate(dt)
+    for i = 1, #party_members do
+        party_members[i]:update(dt)
     end
+
+    for i = 1, #battlebars do
+        if battlebars[i] then
+            battlebars[i]:update(dt)
+        end
+    end
+
     Bg:update(dt)
 
     --print(love.mouse.getX().."  "..love.mouse.getY()) --I use this when checking positions in the UI.
@@ -243,23 +256,53 @@ function love.update(dt)
 end
 
 local function ExecuteAttack()
-    for i = 1, #MembersToAttack do
-        MembersToAttack[i]:set_animation()
-        MembersToAttack[i]:attack(EnemiesToAttack[i])
+
+    print("ExecuteAttack()")
+    print("current_party_member: "..current_party_member)
+
+    current_state = "ATTACKING"
+
+    if #members_to_attack > 0 and #battlebars == 0 then
+        print("members_to_attack: "..#members_to_attack)
+
+        for i = 1, #members_to_attack do
+            battlebars[i] = BattleBar(900+100*i, 738+41*1.5*(i-1), i)
+
+        end
+
+    elseif current_party_member <= #battlebars then
+
+        if battlebars[current_party_member] then
+            battlebars[current_party_member]:attack()
+        end
+
     end
-    MembersToAttack = {}
-    EnemiesToAttack = {}
-    current_state = "BATTLEUI"
+
+    if current_party_member > #battlebars then
+        current_state = "BATTLEUI"
+        members_to_attack = {}
+        enemies_to_attack = {}
+        battlebars = {}
+        current_party_member = 1
+        for i = 1, #party_members do
+            UIs[i]:subtext("* A wild battle commentary appeared!")
+        end
+        current_state = "BATTLEUI"
+    end
+
+
 end
 
 local function ExecuteCommands()
+
+    print("ExecuteCommands()")
 
     local CommandReturned
     current_party_member = current_party_member + 1
 
     print("current_party_member @ COMMANDS:"..current_party_member)
 
-    if current_party_member <= #PartyMembers then
+    if current_party_member <= #party_members then
         if Commands[current_party_member][1] then
             print("Command executed")
             UIs[current_party_member]:subtext(Commands[current_party_member][2])
@@ -268,30 +311,36 @@ local function ExecuteCommands()
         end
     end
     if CommandReturned == "DEFCOMMAND" then
+        party_members[current_party_member].isdefending = true
         ExecuteCommands()
     elseif CommandReturned == "ATTACKCOMMAND" then
-        MembersToAttack[#MembersToAttack+1] = PartyMembers[current_party_member]
+        members_to_attack[#members_to_attack+1] = party_members[current_party_member]
+        print("Latest member to attack: "..members_to_attack[#members_to_attack].name)
         ExecuteCommands()
     end
 
-    if current_party_member >= #PartyMembers + 1 then
-        if #MembersToAttack > 0 then
+    if current_party_member >= #party_members + 1 then
+        if #members_to_attack > 0 then
+            current_party_member = 1
             current_state = "ATTACKING"
+            for i = 1, #party_members do
+                UIs[i]:subtext("")
+            end
             ExecuteAttack()
         else
             current_state = "BATTLEUI"
+            for i = 1, #party_members do
+                UIs[i]:subtext("* A wild battle commentary appeared!")
+            end
         end
+
         current_party_member = 1
-        SelectedEnemies = {}
+        selected_enemies = {}
         actname = {}
         actindex = {}
-        for i = 1, #PartyMembers do
-            UIs[i]:subtext("* A wild battle commentary appeared!")
-            UIs[i].buttonmode = 1
-            PartyMembers[i]:set_animation(0)
-        end
-        for i = 1, #PartyMembers do
+        for i = 1, #party_members do
             Commands[i] = {}
+            UIs[i].buttonmode = 1
         end
     end
 
@@ -313,7 +362,7 @@ function love.keypressed(key)
             UIs[current_party_member]:subtext(nil)
             love.audio.play(SND_SELECT)
             UIs[current_party_member]:menuState(Sole, 631, 471, ARR_STATES[UIs[current_party_member].buttonmode], Enemysubarray)
-            PartyMembers[current_party_member]:set_animation(ARR_STATES[UIs[current_party_member].buttonmode])
+            party_members[current_party_member]:set_animation(ARR_STATES[UIs[current_party_member].buttonmode])
             if ARR_STATES[UIs[current_party_member].buttonmode] == "DEFEND" then
 
                 --No extra commands neeed for the party member to defend
@@ -323,11 +372,11 @@ function love.keypressed(key)
 
                 end
 
-                Commands[current_party_member][2] = PartyMembers[current_party_member].name.." defended!" --Not displayed, necessary for regular flow of program.
+                Commands[current_party_member][2] = party_members[current_party_member].name.." defended!" --Not displayed, necessary for regular flow of program.
 
                 --Advance to next opponent or move on to executing every command?
                 current_party_member = current_party_member + 1
-                if current_party_member > #PartyMembers then
+                if current_party_member > #party_members then
                     current_party_member = 0
                     current_state = "COMMANDS"
                     ExecuteCommands()
@@ -345,23 +394,23 @@ function love.keypressed(key)
             love.audio.play(SND_SELECT)
             UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
             UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI")
-            PartyMembers[current_party_member]:set_animation(0)
+            party_members[current_party_member]:set_animation(0)
         elseif key == "z" then
             love.audio.play(SND_SELECT)
             selected_enemy = enemies[Sole.currentmenuposition]
             selected_enemy = enemies[Sole.currentmenuposition]
-            SelectedEnemies[current_party_member] = enemies[Sole.currentmenuposition]
+            selected_enemies[current_party_member] = enemies[Sole.currentmenuposition]
 
-            EnemiesToAttack[#EnemiesToAttack+1] = selected_enemy
+            enemies_to_attack[#enemies_to_attack+1] = selected_enemy
             Commands[current_party_member][1] = function ()
                 return "ATTACKCOMMAND"
             end
 
-            Commands[current_party_member][2] = "* "..PartyMembers[current_party_member].name.." attacked "..selected_enemy.name.."!" --Not displayed, necessary for regular flow of program.
+            Commands[current_party_member][2] = "* "..party_members[current_party_member].name.." attacked "..selected_enemy.name.."!" --Not displayed, necessary for regular flow of program.
 
             --Go back to the Battle UI or move on to executing every command?
             current_party_member = current_party_member + 1
-            if current_party_member > #PartyMembers then
+            if current_party_member > #party_members then
                 current_party_member = 0
                 current_state = "COMMANDS"
                 ExecuteCommands()
@@ -382,13 +431,13 @@ function love.keypressed(key)
             love.audio.play(SND_SELECT)
             UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
             UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI")
-            PartyMembers[current_party_member]:set_animation(0)
+            party_members[current_party_member]:set_animation(0)
         elseif key == "z" then
             love.audio.play(SND_SELECT)
             selected_enemy = enemies[Sole.currentmenuposition]
-            SelectedEnemies[current_party_member] = enemies[Sole.currentmenuposition]
-            UIs[current_party_member]:menuState(Sole, 0, 0, "ACTSUBSUB", actsubsubs[selected_enemy])
-            Sole:updatePosArray(actsubsubs[selected_enemy])
+            selected_enemies[current_party_member] = enemies[Sole.currentmenuposition]
+            UIs[current_party_member]:menuState(Sole, 0, 0, "ACTSUBSUB", act_sub_subs[selected_enemy])
+            Sole:updatePosArray(act_sub_subs[selected_enemy])
         elseif key == "left" then
             Sole:updatePos(-1)
         elseif key == "right" then
@@ -400,26 +449,26 @@ function love.keypressed(key)
             love.audio.play(SND_SELECT)
             selected_enemy = nil
             UIs[current_party_member]:menuState(Sole, 0, 0, "ACTUI", Enemysubarray)
-            PartyMembers[current_party_member]:set_animation(0)
+            party_members[current_party_member]:set_animation(0)
 
         elseif key == "z" then
             actname[current_party_member] = Sole.positions[Sole.currentmenuposition][1]
             actindex[current_party_member] = Sole.currentmenuposition
             love.audio.play(SND_SELECT)
-            print(SelectedEnemies[current_party_member].name.." added to queue to be acted with.")
+            print(selected_enemies[current_party_member].name.." added to queue to be acted with.")
 
             Commands[current_party_member][1] = function()
 
 
-                PartyMembers[current_party_member]:act(SelectedEnemies[current_party_member], actname[current_party_member], UIs[current_party_member])
+                party_members[current_party_member]:act(selected_enemies[current_party_member], actname[current_party_member], UIs[current_party_member])
 
             end
 
-            Commands[current_party_member][2] = actsubsubs[SelectedEnemies[current_party_member]][actindex[current_party_member]][4]
+            Commands[current_party_member][2] = act_sub_subs[selected_enemies[current_party_member]][actindex[current_party_member]][4]
 
             --Go back to the Battle UI or move on to executing every command?
             current_party_member = current_party_member + 1
-            if current_party_member > #PartyMembers then
+            if current_party_member > #party_members then
                 current_party_member = 0
                 current_state = "COMMANDS"
                 ExecuteCommands()
@@ -441,24 +490,24 @@ function love.keypressed(key)
             love.audio.play(SND_SELECT)
             UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
             UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI")
-            PartyMembers[current_party_member]:set_animation(0)
+            party_members[current_party_member]:set_animation(0)
         elseif key == "z" then
             love.audio.play(SND_SELECT)
             selected_enemy = enemies[Sole.currentmenuposition]
-            SelectedEnemies[current_party_member] = enemies[Sole.currentmenuposition]
-            print(SelectedEnemies[current_party_member].name.." added to queue to be spared.")
+            selected_enemies[current_party_member] = enemies[Sole.currentmenuposition]
+            print(selected_enemies[current_party_member].name.." added to queue to be spared.")
 
             Commands[current_party_member][1] = function()
 
-                PartyMembers[current_party_member]:spare(SelectedEnemies[current_party_member])
+                party_members[current_party_member]:spare(selected_enemies[current_party_member])
 
                 end
 
-            Commands[current_party_member][2] = "* "..PartyMembers[current_party_member].name.." spared "..selected_enemy.name.."!"
+            Commands[current_party_member][2] = "* "..party_members[current_party_member].name.." spared "..selected_enemy.name.."!"
 
             --Go back to the Battle UI or move on to executing every command?
             current_party_member = current_party_member + 1
-            if current_party_member > #PartyMembers then
+            if current_party_member > #party_members then
                 current_party_member = 0
                 current_state = "COMMANDS"
                 ExecuteCommands()
@@ -478,11 +527,11 @@ function love.keypressed(key)
     --Temporarily kept here to copy the code to every other state.
     --This state used to be used instead of ExecuteCommands()
     --However, a press on Z, X or C was needed even if the partyMember was only defending.
-    
+
     --[[
     elseif (key == "z" or key == "x" or key == "c") and current_state == "FEEDBACK" then
         current_party_member = current_party_member + 1
-        if current_party_member > #PartyMembers then
+        if current_party_member > #party_members then
             current_party_member = 0
             current_state = "COMMANDS"
             ExecuteCommands()
@@ -495,15 +544,18 @@ function love.keypressed(key)
 
     elseif current_state == "COMMANDS" then
 
-        if current_party_member <= #PartyMembers then
+        if current_party_member <= #party_members then
             ExecuteCommands()
         end
+
+    elseif  current_state == "ATTACKING" and key == "z" then
+        ExecuteAttack()
 
     elseif current_state == "BATTLEOVER" then
         love.event.quit()
     end
 
-    if current_party_member <= #PartyMembers then
+    if current_party_member <= #party_members then
         print("Button mode: "..ARR_STATES[UIs[current_party_member].buttonmode])
     else
         print("Resetting to BATTLEUI next round")
@@ -530,10 +582,10 @@ function love.draw()
 
     love.graphics.setColor(1,1,1,1) --If you don't set to white when drawing images, the image colors get altered.
 
-    for i = 1, #PartyMembers do
-        PartyMembers[i]:draw()
+    for i = 1, #party_members do
+        party_members[i]:draw()
     end
-    
+
     for i = 1, #UIs do
         UIs[i]:draw()
     end
@@ -548,6 +600,10 @@ function love.draw()
     Mizzle1sub:draw()
     Mizzle2sub:draw()
     Mizzle3sub:draw()
+
+    for i = 1, #battlebars do
+        battlebars[i]:draw()
+    end
 
     Sole:draw()
 

@@ -4,15 +4,15 @@ function BattleUi:new(name, background, header, buttons, x, y, targetpartymember
     self.name = name
     self.background = love.graphics.newImage("sprites/battleUI/ui_"..background..".png")
     self.header = love.graphics.newImage("sprites/battleUI/header_"..header..".png")
-    
+
     self.subtextstr = nil
 
     local buttonimages = {}
-    
+
     for i = 1,#buttons do
         buttonimages[i] = love.graphics.newImage("sprites/battleUI/"..buttons[i][1]..".png")
     end
-    
+
     self.buttonmode = 1
     self.buttonimages = buttonimages
     self.x = x
