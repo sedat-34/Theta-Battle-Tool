@@ -3,7 +3,7 @@
 
 PartyMember = Object:extend()
 
-function PartyMember:new(name, xpos, ypos, animations, defaultframe, defaultanim, size, maxhp, ATK, DEF)
+function PartyMember:new(name, xpos, ypos, animations, defaultframe, defaultanim, animationSpecialLoops, size, maxhp, ATK, DEF)
 
     self.name = name
     self.xpos = xpos
@@ -16,6 +16,7 @@ function PartyMember:new(name, xpos, ypos, animations, defaultframe, defaultanim
     self.hp = maxhp
     self.ATK = ATK
     self.DEF = DEF
+    self.animationSpecialLoops = animationSpecialLoops
 
     self.currentanimation = defaultanim
     self.currentframe = nil
@@ -49,6 +50,10 @@ function PartyMember:new(name, xpos, ypos, animations, defaultframe, defaultanim
         
     }
 
+    for k, v in pairs(self.animationSpecialLoops) do
+        print (self.name.." special loop "..k.." : "..v)
+    end
+
 end
 
 function PartyMember:draw()
@@ -71,40 +76,13 @@ function PartyMember:set_animation(currentanimationindex)
         self.currentanimation = currentanimationindex
     else
         self.currentanimation = self.animationsfromstate[currentanimationindex]
-    end
-        self.currentframecount = 1
-end
 
-function PartyMember:animate(dt)
-
-    if self.animations then
-        --PartyMember animations not nil, updating frame to display
-        self.currentframecount = self.currentframecount+ dt * self.animations[self.currentanimation][3]
-
-        --This part handles looping and unlooping animations.
-        if math.floor(self.currentframecount) > self.animations[self.currentanimation][2] then
-
-            if self.animations[self.currentanimation][4] then -- if the animation loops:
-
-                self.currentframecount = 1
-
-            elseif self.currentanimation == 5 then
-
-                self:set_animation(9)
-
-            else
-
-                self.currentanimation = self.defaultanim --You should manually change this within the next update if the default animation is just a fallback
-                self.currentframecount = 1
-
-            end
-
+        if self.currentanimation == nil then
+            self.currentanimation = self.defaultanim
         end
 
-        self.currentframe = self.animationframes[self.currentanimation][math.floor(self.currentframecount)]
-
     end
-
+        self.currentframecount = 1
 end
 
 function PartyMember:attack(local_enemy, mult)
@@ -150,7 +128,7 @@ function PartyMember:update(dt)
         self.isdefending = false
         self:set_animation(0)
     end
-    self:animate(dt)
+    Animate(self, dt, self.animationSpecialLoops)
 end
 
 function PartyMember:act(local_enemy, actname, ui)

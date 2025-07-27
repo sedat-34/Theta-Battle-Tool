@@ -102,34 +102,6 @@ function Mizzle:hurt(n)
     print(self.name.." hp is: "..self.hp)
 end
 
-function Mizzle:animate(dt)
-
-    if self.animations and self.hp > 0 then
-        --Mizzle nimations not nil and Mizzle is alives
-        self.currentframecount = self.currentframecount+ dt * self.animations[self.currentanimation][3]
-
-        --This part handles looping and unlooping animations.
-        if math.floor(self.currentframecount) > self.animations[self.currentanimation][2] then
-
-            if self.animations[self.currentanimation][4] then -- if the animation loops:
-
-                self.currentframecount = 1
-
-            else
-
-                self.currentanimation = self.defaultanim --You should manually change this within the next update if the default animation is just a fallback
-                self.currentframecount = 1               --It's not like my example Mizzle has any "unlooped" animations, but still.
-
-            end
-
-        end
-
-        self.currentframe = self.animationframes[self.currentanimation][math.floor(self.currentframecount)]
-
-    end
-
-end
-
 function Mizzle:set_animation(n)
     print(self.name.." animation changed from number "..self.currentanimation.." to number "..n)
     --The mizzle has 2 sets of sprites, so if it's sparable the pink alternative is used.
@@ -228,7 +200,10 @@ function Mizzle:update(dt)
     if  self.x < 1750 and (self.hp <= 0  or self.mercied) then
         self.x = self.x + 1000*dt
     end
-    self:animate(dt)
+
+    if self.hp > 0 then
+        Animate(self, dt)
+    end
 
     if (self.hp <= 0 or self.mercied) and self.x >= 1750 then
         self:remove()
