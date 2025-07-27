@@ -7,6 +7,8 @@ require "battlebar"
 require "soul"
 require "submenu"
 require "mizzle"
+require "battlebox"
+require "animate"
 
 --Best for pixel-precise scaling (no blur)
 love.graphics.setDefaultFilter( "nearest", "nearest", 1)
@@ -80,6 +82,8 @@ function love.load()
 
     local kris_buttons = { --Generally FIGHT/ACT/ITEM/SPARE/DEFEND but I used ATTACK for some reason
                            --And because it's written all over the code I can't change it anymore
+                           --A monster party member could use MAGIC.
+                           --Or a custom member could get custom behaviour and custom submenus. Go wild!
         [1] = {"attack"},
         [2] = {"act"},
         [3] = {"item"},
@@ -87,11 +91,15 @@ function love.load()
         [5] = {"defend"},
     }
 
-    kris_1 = PartyMember("Kris1", 100, 202, kris_anims, "krisplace.png", 0, 4, 203, 35, 10)
+    local krisSpecialLoops = {
+        [5] = 9
+    }
+
+    kris_1 = PartyMember("Kris1", 100, 202, kris_anims, "krisplace.png", 0, krisSpecialLoops, 4, 203, 35, 10)
     kris_1:set_animation("ATTACK")
 
-    kris_2 = PartyMember("Kris2", 100, 402, kris_anims, "krisplace.png", 0, 4, 203, 35, 10)
-    kris_2:set_animation(1)
+    kris_2 = PartyMember("Kris2", 100, 402, kris_anims, "krisplace.png", 0, krisSpecialLoops, 4, 203, 35, 10)
+    kris_2:set_animation("ATTACK")
 
     party_members = {
         kris_1,
@@ -146,7 +154,7 @@ function love.load()
     }
 
     act_sub_subs = { --ACT -> enemies[i] -> These show up
-                   --Even if enemies[i] changes, it looks for the original memory adress
+                     --Even if enemies[i] changes, it looks for the original memory adress
 
         [enemies[1]] = { --Handle these in enemies[1]:act(actname)
             [1] = {"* Alarm", 218, 771, "* Mizzr is awoken!\n* This sounds like a bad idea."},
@@ -171,7 +179,7 @@ function love.load()
 
     --Load fonts!
     Battlefont = love.graphics.newFont("fonts/8bitOperatorPlus-Bold.ttf", 28)
-    Goldenfont = love.graphics.newImageFont("sprites/goldennumeralfont.png", "0123456789+-%/ ")--The mercy increased / recruit font
+    Goldenfont = love.graphics.newImageFont("sprites/goldennumeralfont.png", "0123456789+-%/ ")--The mercy increased font
 
     love.graphics.setFont(Battlefont)
 

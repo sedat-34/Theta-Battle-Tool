@@ -22,6 +22,10 @@ Many sprites used in this project were acquired from The Spriters Resource. Cred
 	* Website: https://www.spriters-resource.com/pc_computer/deltarune/sheet/175637/
 	* Author: Yuti
 
+* "Battle Box"
+	* Website: https://www.spriters-resource.com/pc_computer/deltarune/sheet/167406/
+	* Author: Yuti
+
 * "Kris"
 	* Website: https://www.spriters-resource.com/pc_computer/deltarune/sheet/110448/
 	* Authors: asym, Bubbled, Eli101gamer, kendotlibero, MrDoubleA, sissel, Yuti
@@ -41,12 +45,12 @@ Many sprites used in this project were acquired from The Spriters Resource. Cred
 
 => Licensing information
 
-This distribution contains code and graphics other resources from the following projects (full license text below):
+This distribution contains code, graphics and other resources from the following projects (full license text below):
 
  - Theta Battle Tool
 	* Website: n/a
 	* License: GNU GPLv3 
-	* Copyright: 2025 Sedat
+	* Copyright: (c) 2025 Sedat Arıtürk
 
  - LOVE
 	* Website: https://love2d.org/
