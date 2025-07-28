@@ -71,11 +71,11 @@ function PartyMember:draw()
 
 end
 
-function PartyMember:set_animation(currentanimationindex)
-    if type(currentanimationindex) == "number" then
-        self.currentanimation = currentanimationindex
+function PartyMember:set_animation(animation)
+    if type(animation) == "number" then
+        self.currentanimation = animation
     else
-        self.currentanimation = self.animationsfromstate[currentanimationindex]
+        self.currentanimation = self.animationsfromstate[animation]
 
         if self.currentanimation == nil then
             self.currentanimation = self.defaultanim
