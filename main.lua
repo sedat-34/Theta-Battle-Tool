@@ -57,15 +57,17 @@ local Commands = {}
 local kris_1
 local kris_2
 
-local barry --barry the bar
-
 local mizzle_1
 local mizzle_2
 local mizzle_3
 
 local Bg
+local Box
 
 function love.load()
+
+    Box = Battlebox()
+
     --Player data
     local kris_anims = {
         [0] = {"krisIdle", 6, 6, true, 0, 0},
@@ -234,6 +236,8 @@ function love.update(dt)
     end
 
     Bg:update(dt)
+
+    Box:update(dt)
 
     --print(love.mouse.getX().."  "..love.mouse.getY()) --I use this when checking positions in the UI.
 
@@ -612,6 +616,8 @@ function love.draw()
     for i = 1, #battlebars do
         battlebars[i]:draw()
     end
+
+    Box:draw()
 
     Sole:draw()
 

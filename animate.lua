@@ -16,9 +16,12 @@ function Animate(object, dt, specialcase)
                 local isspecialcase = false
 
                 if specialcase then
-                    for k, v in pairs(specialcase) do
-                        if k == object.currentanimation then
-                            object:set_animation(v)
+                    for animation, proceed in pairs(specialcase) do
+                        if animation == object.currentanimation then
+
+                            print(object.name.." animation ended. Changing "..animation.." => "..proceed)
+                            
+                            object:set_animation(proceed)
                             isspecialcase = true
                             break
                         end
