@@ -535,24 +535,6 @@ function love.keypressed(key)
 
         end
 
-    --Temporarily kept here to copy the code to every other state.
-    --This state used to be used instead of ExecuteCommands()
-    --However, a press on Z, X or C was needed even if the partyMember was only defending.
-
-    --[[
-    elseif (key == "z" or key == "x" or key == "c") and current_state == "FEEDBACK" then
-        current_party_member = current_party_member + 1
-        if current_party_member > #party_members then
-            current_party_member = 0
-            current_state = "COMMANDS"
-            ExecuteCommands()
-        else
-            UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
-            current_state = "BATTLEUI"
-        end
-        selected_enemy = nil
-        ]]
-
     elseif current_state == "COMMANDS" then
 
         if current_party_member <= #party_members then
@@ -588,6 +570,7 @@ function love.draw()
     love.graphics.setColor(0,0,0,1)
     love.graphics.rectangle("fill",0,687,1280,273)
 
+    --UI Purple line (bottom)
     love.graphics.setColor(51/255, 32/255, 51/255)
     love.graphics.rectangle("fill", 0, 733, 1280, 4)
 
