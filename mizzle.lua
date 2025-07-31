@@ -176,7 +176,7 @@ end
 
 function Mizzle:update(dt)
 
-    if current_state == "BATTLEUI" then
+    if current_state == "BULLETS" then
         if self.mercyup then
             self.mercyup = nil
         end

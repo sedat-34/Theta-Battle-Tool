@@ -236,6 +236,8 @@ function love.update(dt)
 
     Bg:update(dt)
 
+    Sole:update(dt)
+
     Box:update(dt)
 
     --print(love.mouse.getX().."  "..love.mouse.getY()) --I use this when checking positions in the UI.
@@ -298,7 +300,9 @@ local function ExecuteAttack()
         for i = 1, #party_members do
             UIs[i]:subtext("* A wild battle commentary appeared!")
         end
-        current_state = "BATTLEUI"
+        Box:set_animation(1)
+        Sole:updateLimits(Box)
+        current_state = "BULLETS"
     end
 
 
@@ -339,7 +343,9 @@ local function ExecuteCommands()
             end
             ExecuteAttack()
         else
-            current_state = "BATTLEUI"
+            current_state = "BULLETS"
+            Box:set_animation(1)
+            Sole:updateLimits(Box)
             for i = 1, #party_members do
                 UIs[i]:subtext("* A wild battle commentary appeared!")
             end
@@ -357,11 +363,20 @@ local function ExecuteCommands()
 
 end
 
+function love.mousepressed(x, y, button)
+
+    if button == 1 then
+        print(x..", "..y)
+    end
+    
+end
+
 function love.keypressed(key)
 
-    --This if else statement is the core of ThetaBattleTool
-    --It handles the entirity of the UI system
+    --This if else statement is one of the cores of Theta Battle Tool
+    --It handles the entirity of the UI system, as well as all of its functions.
     --Do not edit this unless you're CERTAIN you know what you're doing.
+    --(Or have a backup, like the official one over at https://github.com/mrdumbguy/Theta-Battle-Tool)
 
     if current_state == "BATTLEUI" then --The main battle menu. If you see the five buttons, you're in this state.
 
@@ -542,19 +557,17 @@ function love.keypressed(key)
         end
 
     elseif  current_state == "ATTACKING" and key == "z" then
+        
         ExecuteAttack()
 
     elseif current_state == "BATTLEOVER" then
         love.event.quit()
     end
 
-    if current_party_member <= #party_members then
-        print("Button mode: "..ARR_STATES[UIs[current_party_member].buttonmode])
-    else
-        print("Resetting to BATTLEUI next round")
+    if current_state ~= "BULLETS" then
+        print("Current State: "..current_state)
+        print("Party Member:"..current_party_member)
     end
-    print("Current State: "..current_state)
-    print("Party Member:"..current_party_member)
 
 end
 
