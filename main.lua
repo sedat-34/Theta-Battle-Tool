@@ -21,7 +21,7 @@ WIDTH = love.graphics.getWidth()
 HEIGHT = love.graphics.getHeight()
 
 ARR_STATES = { --UI Buttons to states as used in current_state
-               --MAGIC is also used in actui
+               --MAGIC will also be used in ACTUI
                --It still has a graphical difference (magic button over act button) but no functional one.
     "ATTACKUI",
     "ACTUI",
@@ -68,7 +68,6 @@ function love.load()
 
     Box = Battlebox()
 
-    --Player data
     local kris_anims = {
         [0] = {"krisIdle", 6, 6, true, 0, 0},
         [1] = {"krisAttack", 8, 15, false, 0, -1},
@@ -79,7 +78,7 @@ function love.load()
         [6] = {"krisAttackWait", 1, 1, true, 0, -1},
         [7] = {"krisActWait", 1, 1, true, 0, 0},
         [8] = {"krisActWait", 1, 1, true, 0, 0}, --Again, sparing is visually the same as acting. 
-        [9] = {"krisDefendLoop", 1, 1, true, 0, -0.5}, --Used during the bullet state
+        [9] = {"krisDefendLoop", 1, 1, true, 0, -0.5}, --Unlooping animations set animation to default, so this animation is required to keep their last sprite.
     }
 
     local kris_buttons = { --Generally FIGHT/ACT/ITEM/SPARE/DEFEND but I used ATTACK for some reason
@@ -150,6 +149,7 @@ function love.load()
     --Check out submenu.lua for more info
 
     Enemysubarray = { --The array used when generating a submenu with the enemies' names
+                      --You must define the positions of the enemy names yourself.
         [1] = {"* "..enemies[1].name, 218, 771},
         [2] = {"* "..enemies[2].name, 778, 771},
         [3] = {"* "..enemies[3].name, 218, 851},
@@ -161,7 +161,6 @@ function love.load()
         [enemies[1]] = { --Handle these in enemies[1]:act(actname)
             [1] = {"* Alarm", 218, 771, "* Mizzr is awoken!\n* This sounds like a bad idea."},
             [2] = {"* Lullaby", 778, 771, "* Somebody sung a lullaby!\n* Not as good as Ralsei's, but it worked."},
-            [3] = {"* Undefined", 218, 821, "* This subtext shouldn't show up\n* If \"* Undefined\" is not in enemy:contains()\n* Check your code :("}
         },
         [enemies[2]] = {
             [1] = {"* Alarm", 218, 771, "* Mizzy is awoken!\n* This sounds like a bad idea."},
