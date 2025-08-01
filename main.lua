@@ -9,6 +9,8 @@ require "submenu"
 require "mizzle"
 require "battlebox"
 require "animate"
+require "bullet"
+flux = require "flux"
 
 --Best for pixel-precise scaling (no blur)
 love.graphics.setDefaultFilter( "nearest", "nearest", 1)
@@ -265,6 +267,8 @@ function love.update(dt)
     UIs[current_party_member]:subtext("* Battle is over!\n* Press any key to exit")
     Sole:updatePosArray(nil)
     end
+
+    flux.update(dt)
 
 end
 
