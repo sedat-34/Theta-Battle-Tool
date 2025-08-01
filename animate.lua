@@ -30,7 +30,7 @@ function Animate(object, dt, specialcase)
 
                 if not isspecialcase then
 
-                    object.currentanimation = object.defaultanim --You should manually change this within the next update if the default animation is just a fallback
+                    object:set_animation(object.defaultanim)
                     object.currentframecount = 1
 
                 end

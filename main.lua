@@ -23,7 +23,7 @@ WIDTH = love.graphics.getWidth()
 HEIGHT = love.graphics.getHeight()
 
 ARR_STATES = { --UI Buttons to states as used in current_state
-               --MAGIC will also be used in ACTUI
+               --MAGIC will also be used in ACTUI since behavior is similar enough
                --It still has a graphical difference (magic button over act button) but no functional one.
     "ATTACKUI",
     "ACTUI",
