@@ -159,6 +159,9 @@ function Mizzle:remove()
         Enemysubarray[#Enemysubarray] = nil
     end
 
+    --No leftovers (or the dish will cry)
+    collectgarbage("collect")
+
 end
 
 function Mizzle:spared()

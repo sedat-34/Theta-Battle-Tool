@@ -80,7 +80,7 @@ function Soul:update(dt)
 
     end
 
-    --TODO Collision checks
+    --TODO Collision checks with bullets
     
 end
 

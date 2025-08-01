@@ -292,17 +292,21 @@ local function ExecuteAttack()
     end
 
     if current_party_member > #battlebars then
-        current_state = "BATTLEUI"
+
+        --Collect garbage
         members_to_attack = {}
         enemies_to_attack = {}
         battlebars = {}
+        collectgarbage("collect")
+
         current_party_member = 1
         for i = 1, #party_members do
             UIs[i]:subtext("* A wild battle commentary appeared!")
         end
         Box:set_animation(1)
         Sole:updateLimits(Box)
-        current_state = "BULLETS"
+        --BULLETS
+        current_state = "BATTLEUI"
     end
 
 
@@ -335,6 +339,12 @@ local function ExecuteCommands()
     end
 
     if current_party_member >= #party_members + 1 then
+        
+        Commands = {}
+        for i = 1, #party_members do
+            Commands[i] = {}
+        end
+
         if #members_to_attack > 0 then
             current_party_member = 1
             current_state = "ATTACKING"
@@ -343,9 +353,14 @@ local function ExecuteCommands()
             end
             ExecuteAttack()
         else
-            current_state = "BULLETS"
+            --BULLETS
+            current_state = "BATTLEUI"
             Box:set_animation(1)
             Sole:updateLimits(Box)
+            
+            --Collect garbage
+            collectgarbage("collect")
+            
             for i = 1, #party_members do
                 UIs[i]:subtext("* A wild battle commentary appeared!")
             end
