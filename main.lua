@@ -12,11 +12,11 @@ require "animate"
 require "bullet"
 flux = require "flux"
 
---Best for pixel-precise scaling (no blur)
+--Best for blurless scaling
 love.graphics.setDefaultFilter( "nearest", "nearest", 1)
 
 
---Place constant values here. There's no constants in lua, but keeping them separated will help you stay organised.
+--Place constant values here.
 
 --Honestly I don't think I used either of these anywhere but maybe someone will need them.
 WIDTH = love.graphics.getWidth()
@@ -56,6 +56,7 @@ local act_sub_subs = {}
 
 local Commands = {}
 
+--The partyMembers and enemies
 local kris_1
 local kris_2
 
@@ -63,6 +64,7 @@ local mizzle_1
 local mizzle_2
 local mizzle_3
 
+--Misc. stuff required for your battle
 local Bg
 local Box
 
@@ -269,6 +271,8 @@ function love.update(dt)
     end
 
     flux.update(dt)
+    
+    collectgarbage("collect")
 
 end
 
@@ -316,6 +320,10 @@ local function ExecuteAttack()
 
 end
 
+--Don't touch this unless you are CERTAIN you know what you are doing.
+--This function handles every command passed through the UI.
+--That means all of FIGHT/ACT...MERCY is handled here.
+
 local function ExecuteCommands()
 
     print("ExecuteCommands()")
@@ -357,8 +365,9 @@ local function ExecuteCommands()
             end
             ExecuteAttack()
         else
-            --BULLETS
-            current_state = "BATTLEUI"
+
+
+            current_state = "BULLETS"
             Box:set_animation(1)
             Sole:updateLimits(Box)
             
@@ -393,7 +402,7 @@ end
 function love.keypressed(key)
 
     --This if else statement is one of the cores of Theta Battle Tool
-    --It handles the entirity of the UI system, as well as all of its functions.
+    --It handles the entirity of the UI system, as well defining as all of its functions.
     --Do not edit this unless you're CERTAIN you know what you're doing.
     --(Or have a backup, like the official one over at https://github.com/mrdumbguy/Theta-Battle-Tool)
 
