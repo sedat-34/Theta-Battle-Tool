@@ -48,14 +48,6 @@ function Mizzle:new(name, x, y, animations, defaultanim, size, maxhp)
 
 end
 
-function Mizzle:contains(str) --If you don't add your act here, fallback text will be used.
-    if str == "* Alarm" or str == "* Lullaby" then
-        return true
-    else
-        return false
-    end
-end
-
 function Mizzle:act(actname, ui) --Handle acts passed by a partyMember() based on actname
 
     if actname == "* Alarm" then
@@ -76,7 +68,8 @@ function Mizzle:act(actname, ui) --Handle acts passed by a partyMember() based o
 
     else
         
-        ui:subtext()
+        --Not necessary, but helpful for debugging.
+        ui:subtext("* Someone did an act...\n* But it was not defined in the enemy file!\n* Check mizzle.lua")
 
     end
 
@@ -159,6 +152,9 @@ function Mizzle:remove()
         Enemysubarray[#Enemysubarray] = nil
     end
 
+    --No leftovers (or the dish will cry)
+    collectgarbage("collect")
+
 end
 
 function Mizzle:spared()
@@ -176,7 +172,7 @@ end
 
 function Mizzle:update(dt)
 
-    if current_state == "BATTLEUI" then
+    if current_state == "BULLETS" then
         if self.mercyup then
             self.mercyup = nil
         end

@@ -2,11 +2,16 @@ Soul = Object:extend()
 
 function Soul:new()
     self.image = love.graphics.newImage("sprites/soul.png")
-    self.x = 10000
-    self.y = 10000
+    self.x = 0
+    self.y = 0
     self.size = 1.5
     
     self.currentmenuposition = 0
+
+    self.top = 200
+    self.bottom = 483
+    self.left = 500
+    self.right = 783
 end
 
 function Soul:updatePos(delta)
@@ -28,10 +33,55 @@ function Soul:updatePos(delta)
     end
 end
 
+function Soul:updateLimits(Box)
+    self.topLimit = Box.top
+    self.bottomLimit = Box.bottom - (18 * self.size)
+    self.leftLimit = Box.left
+    self.rightLimit = Box.right - (18 * self.size)
+end
 
 function Soul:updatePosArray(posarray)
         self.positions = posarray
         self.currentmenuposition = 1
+end
+
+function Soul:move(dt)
+
+    if love.keyboard.isDown("up") then
+        self.y = self.y - 360*dt
+    elseif love.keyboard.isDown("down") then
+        self.y = self.y + 360*dt
+    end
+
+    if love.keyboard.isDown("right") then
+        self.x = self.x + 360*dt
+    elseif love.keyboard.isDown("left") then
+        self.x = self.x - 360*dt
+    end
+
+    if self.x > self.rightLimit then
+        self.x = self.rightLimit
+    elseif self.x < self.leftLimit then
+        self.x = self.leftLimit
+    end
+
+    if self.y > self.bottomLimit then
+        self.y = self.bottomLimit
+    elseif self.y < self.topLimit then
+        self.y = self.topLimit
+    end
+end
+
+function Soul:update(dt)
+
+    if current_state == "BULLETS" then
+
+        self:move(dt)
+
+    end
+
+    --TODO Collision checks with bullets
+    
 end
 
 function Soul:draw()

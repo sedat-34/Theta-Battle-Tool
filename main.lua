@@ -9,19 +9,21 @@ require "submenu"
 require "mizzle"
 require "battlebox"
 require "animate"
+require "bullet"
+flux = require "flux"
 
---Best for pixel-precise scaling (no blur)
+--Best for blurless scaling
 love.graphics.setDefaultFilter( "nearest", "nearest", 1)
 
 
---Place constant values here. There's no constants in lua, but keeping them separated will help you stay organised.
+--Place constant values here.
 
 --Honestly I don't think I used either of these anywhere but maybe someone will need them.
 WIDTH = love.graphics.getWidth()
 HEIGHT = love.graphics.getHeight()
 
 ARR_STATES = { --UI Buttons to states as used in current_state
-               --MAGIC is also used in actui
+               --MAGIC will also be used in ACTUI since behavior is similar enough
                --It still has a graphical difference (magic button over act button) but no functional one.
     "ATTACKUI",
     "ACTUI",
@@ -54,6 +56,7 @@ local act_sub_subs = {}
 
 local Commands = {}
 
+--The partyMembers and enemies
 local kris_1
 local kris_2
 
@@ -61,6 +64,7 @@ local mizzle_1
 local mizzle_2
 local mizzle_3
 
+--Misc. stuff required for your battle
 local Bg
 local Box
 
@@ -68,7 +72,6 @@ function love.load()
 
     Box = Battlebox()
 
-    --Player data
     local kris_anims = {
         [0] = {"krisIdle", 6, 6, true, 0, 0},
         [1] = {"krisAttack", 8, 15, false, 0, -1},
@@ -79,7 +82,7 @@ function love.load()
         [6] = {"krisAttackWait", 1, 1, true, 0, -1},
         [7] = {"krisActWait", 1, 1, true, 0, 0},
         [8] = {"krisActWait", 1, 1, true, 0, 0}, --Again, sparing is visually the same as acting. 
-        [9] = {"krisDefendLoop", 1, 1, true, 0, -0.5}, --Used during the bullet state
+        [9] = {"krisDefendLoop", 1, 1, true, 0, -0.5}, --Unlooping animations set animation to default, so this animation is required to keep their last sprite.
     }
 
     local kris_buttons = { --Generally FIGHT/ACT/ITEM/SPARE/DEFEND but I used ATTACK for some reason
@@ -150,6 +153,7 @@ function love.load()
     --Check out submenu.lua for more info
 
     Enemysubarray = { --The array used when generating a submenu with the enemies' names
+                      --You must define the positions of the enemy names yourself.
         [1] = {"* "..enemies[1].name, 218, 771},
         [2] = {"* "..enemies[2].name, 778, 771},
         [3] = {"* "..enemies[3].name, 218, 851},
@@ -161,7 +165,6 @@ function love.load()
         [enemies[1]] = { --Handle these in enemies[1]:act(actname)
             [1] = {"* Alarm", 218, 771, "* Mizzr is awoken!\n* This sounds like a bad idea."},
             [2] = {"* Lullaby", 778, 771, "* Somebody sung a lullaby!\n* Not as good as Ralsei's, but it worked."},
-            [3] = {"* Undefined", 218, 821, "* This subtext shouldn't show up\n* If \"* Undefined\" is not in enemy:contains()\n* Check your code :("}
         },
         [enemies[2]] = {
             [1] = {"* Alarm", 218, 771, "* Mizzy is awoken!\n* This sounds like a bad idea."},
@@ -237,6 +240,8 @@ function love.update(dt)
 
     Bg:update(dt)
 
+    Sole:update(dt)
+
     Box:update(dt)
 
     --print(love.mouse.getX().."  "..love.mouse.getY()) --I use this when checking positions in the UI.
@@ -265,6 +270,10 @@ function love.update(dt)
     Sole:updatePosArray(nil)
     end
 
+    flux.update(dt)
+    
+    collectgarbage("collect")
+
 end
 
 local function ExecuteAttack()
@@ -291,19 +300,29 @@ local function ExecuteAttack()
     end
 
     if current_party_member > #battlebars then
-        current_state = "BATTLEUI"
+
+        --Collect garbage
         members_to_attack = {}
         enemies_to_attack = {}
         battlebars = {}
+        collectgarbage("collect")
+
         current_party_member = 1
         for i = 1, #party_members do
             UIs[i]:subtext("* A wild battle commentary appeared!")
         end
+        Box:set_animation(1)
+        Sole:updateLimits(Box)
+        --BULLETS
         current_state = "BATTLEUI"
     end
 
 
 end
+
+--Don't touch this unless you are CERTAIN you know what you are doing.
+--This function handles every command passed through the UI.
+--That means all of FIGHT/ACT...MERCY is handled here.
 
 local function ExecuteCommands()
 
@@ -332,6 +351,12 @@ local function ExecuteCommands()
     end
 
     if current_party_member >= #party_members + 1 then
+        
+        Commands = {}
+        for i = 1, #party_members do
+            Commands[i] = {}
+        end
+
         if #members_to_attack > 0 then
             current_party_member = 1
             current_state = "ATTACKING"
@@ -340,7 +365,15 @@ local function ExecuteCommands()
             end
             ExecuteAttack()
         else
+
+
             current_state = "BATTLEUI"
+            Box:set_animation(1)
+            Sole:updateLimits(Box)
+            
+            --Collect garbage
+            collectgarbage("collect")
+            
             for i = 1, #party_members do
                 UIs[i]:subtext("* A wild battle commentary appeared!")
             end
@@ -358,11 +391,20 @@ local function ExecuteCommands()
 
 end
 
+function love.mousepressed(x, y, button)
+
+    if button == 1 then
+        print(x..", "..y)
+    end
+    
+end
+
 function love.keypressed(key)
 
-    --This if else statement is the core of ThetaBattleTool
-    --It handles the entirity of the UI system
+    --This if else statement is one of the cores of Theta Battle Tool
+    --It handles the entirity of the UI system, as well defining as all of its functions.
     --Do not edit this unless you're CERTAIN you know what you're doing.
+    --(Or have a backup, like the official one over at https://github.com/mrdumbguy/Theta-Battle-Tool)
 
     if current_state == "BATTLEUI" then --The main battle menu. If you see the five buttons, you're in this state.
 
@@ -536,24 +578,6 @@ function love.keypressed(key)
 
         end
 
-    --Temporarily kept here to copy the code to every other state.
-    --This state used to be used instead of ExecuteCommands()
-    --However, a press on Z, X or C was needed even if the partyMember was only defending.
-
-    --[[
-    elseif (key == "z" or key == "x" or key == "c") and current_state == "FEEDBACK" then
-        current_party_member = current_party_member + 1
-        if current_party_member > #party_members then
-            current_party_member = 0
-            current_state = "COMMANDS"
-            ExecuteCommands()
-        else
-            UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
-            current_state = "BATTLEUI"
-        end
-        selected_enemy = nil
-        ]]
-
     elseif current_state == "COMMANDS" then
 
         if current_party_member <= #party_members then
@@ -561,19 +585,17 @@ function love.keypressed(key)
         end
 
     elseif  current_state == "ATTACKING" and key == "z" then
+        
         ExecuteAttack()
 
     elseif current_state == "BATTLEOVER" then
         love.event.quit()
     end
 
-    if current_party_member <= #party_members then
-        print("Button mode: "..ARR_STATES[UIs[current_party_member].buttonmode])
-    else
-        print("Resetting to BATTLEUI next round")
+    if current_state ~= "BULLETS" then
+        print("Current State: "..current_state)
+        print("Party Member:"..current_party_member)
     end
-    print("Current State: "..current_state)
-    print("Party Member:"..current_party_member)
 
 end
 
@@ -589,6 +611,7 @@ function love.draw()
     love.graphics.setColor(0,0,0,1)
     love.graphics.rectangle("fill",0,687,1280,273)
 
+    --UI Purple line (bottom)
     love.graphics.setColor(51/255, 32/255, 51/255)
     love.graphics.rectangle("fill", 0, 733, 1280, 4)
 

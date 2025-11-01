@@ -4,20 +4,20 @@ function Battlebox:new()
 
     self.name = "BATTLEBOX"
 
-   self.animations = {}
+    self.animations = {}
 
-   self.animations = {
-    [1] = {"opening", 17, 30, false},
-    [2] = {"still", 1, 1, true},
-    [3] = {"closing", 28, 30, false},
-    [4] = {"invisible", 1, 1, true},
+    self.animations = {
+        [1] = {"opening", 17, 30, false},
+        [2] = {"still", 1, 1, true},
+        [3] = {"closing", 28, 30, false},
+        [4] = {"invisible", 1, 1, true},
    }
 
-   self.animationframes =  {
-    [1] = {},
-    [2] = {},
-    [3] = {},
-    [4] = {},
+    self.animationframes =  {
+        [1] = {},
+        [2] = {},
+        [3] = {},
+        [4] = {},
    }
 
     for i = 1, 17 do
@@ -36,13 +36,19 @@ function Battlebox:new()
 
     self.animationframes[4][1] = love.graphics.newImage("sprites/battlebox/BBS_0046.png")
 
-    self.currentanimation = 1
+    self.currentanimation = 4
     self.currentframecount = 1
 
     self.animationSpecialLoops = {
         [1] = 2,
         [3] = 4,
     }
+
+    self.top = 200
+    self.bottom = 483
+    self.left = 500
+    self.right = 783
+
 end
 
 function Battlebox:draw()
