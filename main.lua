@@ -367,7 +367,7 @@ local function ExecuteCommands()
         else
 
 
-            current_state = "BULLETS"
+            current_state = "BATTLEUI"
             Box:set_animation(1)
             Sole:updateLimits(Box)
             
