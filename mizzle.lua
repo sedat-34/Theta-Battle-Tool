@@ -1,10 +1,3 @@
--- A lot of the scripts for displaying graphics was reused from the partyMember script.
--- If something doesn't make sense for animating, edit BOTH files.
-
--- I couldn't make a separate "animate.lua" because special cases may arise for all classes needed to be animated.
--- For example, Mizzle() checks if it's sparable and increases the currentanimation by one if it's true
--- In another example, Kris has a special case with the non-looping Defend animation
-
 -- Every unique enemy class must have its own file. Don't try to make a Froggit as a Mizzle().
 
 Mizzle = Object:extend()
