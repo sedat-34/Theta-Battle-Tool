@@ -40,6 +40,11 @@ function Soul:updateLimits(Box)
     self.rightLimit = Box.right - (18 * self.size)
 end
 
+function Soul:centerInBox()
+    self.x = (self.rightLimit - self.leftLimit)/2 + self.leftLimit
+    self.y = (self.bottomLimit - self.topLimit)/2 + self.topLimit
+end
+
 function Soul:updatePosArray(posarray)
         self.positions = posarray
         self.currentmenuposition = 1

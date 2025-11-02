@@ -1,10 +1,11 @@
 --Here you can find all the submenus of the game
---It's actually really simple, and most of the logic related to selection is handled externally (such as soul.currentmenuposition)
+--It's actually really simple, and most of the logic related to selection is handled externally (the soul's position and the main game loop)
 --This class only generates the graphics of any submenu
 
 Submenu = Object:extend()
 
 function Submenu:new(posarray, targetstatearr, targetenemy)
+    
     --These are absolutely REQUIRED. No exceptions.
     self.positions = posarray
     self.targetstatearr = targetstatearr
