@@ -280,11 +280,11 @@ function love.update(dt)
 end
 
 local function BULLETSCleanup()
-            
+
     current_state = "BATTLEUI"
     Box:set_animation(3)
     Sole:updateLimits(Box)
-    
+
     --Collect garbage
         current_party_member = 1
         selected_enemies = {}
@@ -295,7 +295,7 @@ local function BULLETSCleanup()
             UIs[i].buttonmode = 1
         end
     collectgarbage("collect")
-    
+
     for i = 1, #party_members do
         UIs[i]:subtext("* A wild battle commentary appeared!")
     end
@@ -316,8 +316,7 @@ local function StartBULLETS()
         Box:set_animation(1)
         Sole:updateLimits(Box)
         Sole:centerInBox()
-        --BULLETS
-        tick.delay(function() BULLETSCleanup() end, 3)
+        tick.delay(function() BULLETSCleanup() end, 5)
         current_state = "BULLETS"
 end
 
