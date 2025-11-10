@@ -74,6 +74,8 @@ function love.load()
     Box = Battlebox()
 
     local kris_anims = {
+        --The order of the first 10 animations must be the exact same for every party member.
+        --Other misc. animations may be ordered on a per-character basis.
         [0] = {"krisIdle", 6, 6, true, 0, 0},
         [1] = {"krisAttack", 8, 15, false, 0, -1},
         [2] = {"krisAct", 11, 11, false, 0, 0},
