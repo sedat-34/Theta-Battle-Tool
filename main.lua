@@ -11,6 +11,7 @@ require "battlebox"
 require "animate"
 require "bullet"
 flux = require "flux"
+tick = require "tick"
 
 --Best for blurless scaling
 love.graphics.setDefaultFilter( "nearest", "nearest", 1)
@@ -73,6 +74,8 @@ function love.load()
     Box = Battlebox()
 
     local kris_anims = {
+        --The order of the first 10 animations must be the exact same for every party member.
+        --Other misc. animations may be ordered on a per-character basis.
         [0] = {"krisIdle", 6, 6, true, 0, 0},
         [1] = {"krisAttack", 8, 15, false, 0, -1},
         [2] = {"krisAct", 11, 11, false, 0, 0},
@@ -148,7 +151,7 @@ function love.load()
     enemies[2] = mizzle_2
     enemies[3] = mizzle_3
 
-    --START Submenus and their options
+    --Submenus and their options
     --These get used to generate the submenus' text and their positions
     --Check out submenu.lua for more info
 
@@ -250,6 +253,10 @@ function love.update(dt)
         love.audio.play(MUS_Battlemusic)
     end
 
+    tick.update(dt)
+
+    flux.update(dt)
+
     local battleovercheck = true
 
     for i = 1, #enemies do
@@ -270,10 +277,49 @@ function love.update(dt)
     Sole:updatePosArray(nil)
     end
 
-    flux.update(dt)
-    
     collectgarbage("collect")
 
+end
+
+local function BULLETSCleanup()
+
+    current_state = "BATTLEUI"
+    Box:set_animation(3)
+    Sole:updateLimits(Box)
+
+    --Collect garbage
+        current_party_member = 1
+        selected_enemies = {}
+        actname = {}
+        actindex = {}
+        for i = 1, #party_members do
+            Commands[i] = {}
+            UIs[i].buttonmode = 1
+        end
+    collectgarbage("collect")
+
+    for i = 1, #party_members do
+        UIs[i]:subtext("* A wild battle commentary appeared!")
+    end
+
+end
+
+local function StartBULLETS()
+        --Collect garbage
+        members_to_attack = {}
+        enemies_to_attack = {}
+        battlebars = {}
+        collectgarbage("collect")
+
+        current_party_member = 1
+        for i = 1, #party_members do
+            UIs[i]:subtext("* A wild battle commentary appeared!")
+        end
+        Box:set_animation(1)
+        Sole:updateLimits(Box)
+        Sole:centerInBox()
+        tick.delay(function() BULLETSCleanup() end, 5)
+        current_state = "BULLETS"
 end
 
 local function ExecuteAttack()
@@ -301,20 +347,8 @@ local function ExecuteAttack()
 
     if current_party_member > #battlebars then
 
-        --Collect garbage
-        members_to_attack = {}
-        enemies_to_attack = {}
-        battlebars = {}
-        collectgarbage("collect")
-
-        current_party_member = 1
-        for i = 1, #party_members do
-            UIs[i]:subtext("* A wild battle commentary appeared!")
-        end
-        Box:set_animation(1)
-        Sole:updateLimits(Box)
-        --BULLETS
-        current_state = "BATTLEUI"
+        StartBULLETS()
+        
     end
 
 
@@ -367,26 +401,10 @@ local function ExecuteCommands()
         else
 
 
-            current_state = "BATTLEUI"
-            Box:set_animation(1)
-            Sole:updateLimits(Box)
-            
-            --Collect garbage
-            collectgarbage("collect")
-            
-            for i = 1, #party_members do
-                UIs[i]:subtext("* A wild battle commentary appeared!")
-            end
+        StartBULLETS()
+
         end
 
-        current_party_member = 1
-        selected_enemies = {}
-        actname = {}
-        actindex = {}
-        for i = 1, #party_members do
-            Commands[i] = {}
-            UIs[i].buttonmode = 1
-        end
     end
 
 end
@@ -554,6 +572,7 @@ function love.keypressed(key)
             Commands[current_party_member][1] = function()
 
                 party_members[current_party_member]:spare(selected_enemies[current_party_member])
+                party_members[current_party_member]:set_animation(4)
 
                 end
 

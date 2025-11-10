@@ -1,5 +1,5 @@
---Please note that although this is named "partyMember.lua", this file is an example player file for KRIS
---The project does not support multiple party members.
+--The project now supports multiple party members!
+--TODO: ADD SUPPORT FOR S-ACT and R-ACT
 
 PartyMember = Object:extend()
 
@@ -87,8 +87,6 @@ end
 
 function PartyMember:attack(local_enemy, mult)
 
-    local local_enemy = local_enemy
-
     love.audio.play(SND_ATTACK)
     print(self.name.." attacked "..local_enemy.name)
 
@@ -108,17 +106,18 @@ function PartyMember:attack(local_enemy, mult)
             if enemies[i].hp > 0 then
                 local_enemy = enemies[i]
                 selectedEnemyIndex = i
+                break
             end
         end
     end
 
     if local_enemy then
-        print("Attacked enemy "..selectedEnemyIndex)
+        print(self.name.." attacked enemy "..selectedEnemyIndex)
         local_enemy:hurt(self.ATK*mult)
         self.currentanimation = 1
         self.currentframecount = 1
     else
-        print("No enemies left lmao :)")
+        print("No enemies left :)")
         current_state = "BATTLEOVER"
     end
 end
