@@ -420,7 +420,7 @@ end
 function love.keypressed(key)
 
     --This if else statement is one of the cores of Theta Battle Tool
-    --It handles the entirity of the UI system, as well defining as all of its functions.
+    --It handles a majority of the UI logic and every single UI-related state change
     --Do not edit this unless you're CERTAIN you know what you're doing.
     --(Or have a backup, like the official one over at https://github.com/mrdumbguy/Theta-Battle-Tool)
 
