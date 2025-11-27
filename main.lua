@@ -162,8 +162,7 @@ function love.load()
         [3] = {"* "..enemies[3].name, 218, 851},
     }
 
-    act_sub_subs = { --ACT -> enemies[i] -> These show up
-                     --Even if enemies[i] changes, it looks for the original memory adress
+    act_sub_subs = { --ACT -> enemies[i] (in your original array) -> These show up
 
         [enemies[1]] = { --Handle these in enemies[1]:act(actname)
             [1] = {"* Alarm", 218, 771, "* Mizzr is awoken!\n* This sounds like a bad idea."},
@@ -247,7 +246,7 @@ function love.update(dt)
 
     Box:update(dt)
 
-    --print(love.mouse.getX().."  "..love.mouse.getY()) --I use this when checking positions in the UI.
+    --print(love.mouse.getX().." , "..love.mouse.getY()) --I use this when checking positions in the UI.
 
     if not MUS_Battlemusic:isPlaying() then
         love.audio.play(MUS_Battlemusic)
@@ -333,7 +332,18 @@ local function ExecuteAttack()
         print("members_to_attack: "..#members_to_attack)
 
         for i = 1, #members_to_attack do
-            battlebars[i] = BattleBar(900+100*i, 738+41*1.5*(i-1), i)
+            local k = 1
+            local baroffsetcoefficient = 1 --Used to position the battlebars correctly
+
+            while k < #party_members + 1 do
+                if party_members[k] == members_to_attack[i] then
+                    baroffsetcoefficient = k
+                    print("baroffsetcoefficient: "..baroffsetcoefficient)
+                end
+                k = k+1
+            end
+
+            battlebars[i] = BattleBar(900+100*baroffsetcoefficient, 738+41*1.5*(baroffsetcoefficient-1), i)
 
         end
 
@@ -368,7 +378,7 @@ local function ExecuteCommands()
     print("current_party_member @ COMMANDS:"..current_party_member)
 
     if current_party_member <= #party_members then
-        if Commands[current_party_member][1] then
+        if Commands[current_party_member][1] then --Ensure that the Command for a downed partyMember is empty.
             print("Command executed")
             UIs[current_party_member]:subtext(Commands[current_party_member][2])
             CommandReturned = Commands[current_party_member][1]()
@@ -399,10 +409,7 @@ local function ExecuteCommands()
             end
             ExecuteAttack()
         else
-
-
-        StartBULLETS()
-
+            StartBULLETS()
         end
 
     end
