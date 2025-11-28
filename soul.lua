@@ -77,9 +77,9 @@ function Soul:move(dt)
     end
 end
 
-function Soul:update(dt)
+function Soul:update(dt, localcurrentstate)
 
-    if current_state == "BULLETS" then
+    if localcurrentstate == "BULLETS" then
 
         self:move(dt)
 
@@ -89,13 +89,13 @@ function Soul:update(dt)
     
 end
 
-function Soul:draw()
-    if self.positions and (current_state == "ATTACKUI" or current_state == "ACTUI" or current_state == "ACTSUBSUB" or current_state == "SPAREUI") then
+function Soul:draw(localcurrentstate)
+    if self.positions and (localcurrentstate == "ATTACKUI" or localcurrentstate == "ACTUI" or localcurrentstate == "ACTSUBSUB" or localcurrentstate == "SPAREUI") then
         self.x = self.positions[self.currentmenuposition][2]
         self.y = self.positions[self.currentmenuposition][3]+8
         love.graphics.draw(self.image, self.x, self.y, 0, self.size, self.size)
     end
-    if current_state == "BULLETS" then
+    if localcurrentstate == "BULLETS" then
         love.graphics.draw(self.image, self.x, self.y, 0, self.size, self.size)
     end
 end

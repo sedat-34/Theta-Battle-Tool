@@ -45,8 +45,8 @@ function BattleUi:changeselect(delta)
     end
 end
 
-function BattleUi:menuState(soul, x, y, currstate, posarray)
-    current_state = currstate
+function BattleUi:menuState(soul, x, y, currstate, posarray, battle)
+    battle.current_state = currstate
     if posarray then
         soul:updatePosArray(posarray)
     else
@@ -59,8 +59,8 @@ function BattleUi:subtext(subtext)
     self.subtextstr = subtext
 end
 
-function BattleUi:draw()
-    if current_state == "BATTLEUI" and current_party_member == self.targetpartymember then
+function BattleUi:draw(localcurrentstate)
+    if localcurrentstate == "BATTLEUI" and current_party_member == self.targetpartymember then
         love.graphics.draw(self.background, self.x, self.y, 0, 1.5, 1.5)
         love.graphics.draw(self.buttonimages[self.buttonmode], self.x, self.y, 0, 1.5, 1.5)
     else

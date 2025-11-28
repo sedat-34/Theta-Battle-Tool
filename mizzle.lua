@@ -170,9 +170,9 @@ function Mizzle:spared()
     print(self.name.." Mercy at: "..self.mercy)
 end
 
-function Mizzle:update(dt)
+function Mizzle:update(dt, localcurrentstate)
 
-    if current_state == "BULLETS" then
+    if localcurrentstate == "BULLETS" then
         if self.mercyup then
             self.mercyup = nil
         end

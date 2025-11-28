@@ -1,6 +1,6 @@
 BattleBar = Object:extend()
 
-function BattleBar:new(rectanlex, y, i)
+function BattleBar:new(rectanlex, y, i,party_members)
     -- self.x = 0
     self.rectanlex = rectanlex
     self.y = y

@@ -31,11 +31,11 @@ function Submenu:updatePosArray(posarray)
     print(self.positions[1])
 end
 
-function Submenu:draw()
+function Submenu:draw(localcurrentstate)
     local targetstate = false
 
     for i = 1, #self.targetstatearr do
-        if self.targetstatearr[i] == current_state then
+        if self.targetstatearr[i] == localcurrentstate then
             targetstate = true
         end
     end
