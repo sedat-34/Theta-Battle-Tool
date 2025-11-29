@@ -317,7 +317,6 @@ function love.keypressed(key)
         elseif key == "z" then
             love.audio.play(SND_SELECT)
             selected_enemy = enemies[Sole.currentmenuposition]
-            selected_enemy = enemies[Sole.currentmenuposition]
             selected_enemies[current_party_member] = enemies[Sole.currentmenuposition]
 
             enemies_to_attack[#enemies_to_attack+1] = selected_enemy
@@ -349,7 +348,7 @@ function love.keypressed(key)
         if key == "x" then
             love.audio.play(SND_SELECT)
             UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
-            UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", battle)
+            UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", {}, battle)
             battle.party_members[current_party_member]:set_animation(0)
         elseif key == "z" then
             love.audio.play(SND_SELECT)
@@ -401,14 +400,21 @@ function love.keypressed(key)
             Sole:updatePos(-1)
         elseif key == "right" then
             Sole:updatePos(1)
+        end
 
+    elseif battle.current_state == "ITEMUI" then
+        if key == "x" then
+            love.audio.play(SND_SELECT)
+            UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
+            UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", {}, battle)
+            battle.party_members[current_party_member]:set_animation(0)
         end
 
     elseif battle.current_state == "SPAREUI" then
         if key == "x" then
             love.audio.play(SND_SELECT)
             UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
-            UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", battle)
+            UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", {}, battle)
             battle.party_members[current_party_member]:set_animation(0)
         elseif key == "z" then
             love.audio.play(SND_SELECT)
@@ -496,11 +502,11 @@ function love.draw()
         end
     end
 
-    Enemysub:draw(battle.current_state)
+    battle.Enemysub:draw(battle.current_state)
 
-    Mizzle1sub:draw(battle.current_state)
-    Mizzle2sub:draw(battle.current_state)
-    Mizzle3sub:draw(battle.current_state)
+    for i = 1, #battle.Enemysubsubs do
+        battle.Enemysubsubs[i]:draw(battle.current_state)
+    end
 
     for i = 1, #battlebars do
         battlebars[i]:draw()
