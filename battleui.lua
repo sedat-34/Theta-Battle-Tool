@@ -20,18 +20,6 @@ function BattleUi:new(name, background, header, buttons, x, y, targetpartymember
     self.targetpartymember = targetpartymember
 end
 
---[[function BattleUi:keypressed(key, affectedPartyMember)
-    if key == "z" then
-        if self.buttonmode == 1 then
-            affectedPartyMember:setAnimation(6) --Loop waiting for attack
-        elseif self.buttonmode == 2 then
-            affectedPartyMember:setAnimation(7) --Loop waiting for act to use
-        else
-            affectedPartyMember:setAnimation(self.buttonmode)
-        end
-    end
-end]]
-
 function BattleUi:changeselect(delta)
     --This is used in the illusion of "moving" your selection.
     --In actuality, this variable tracks which sprite to display.

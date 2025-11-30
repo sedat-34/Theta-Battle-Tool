@@ -138,6 +138,8 @@ local function BULLETSCleanup()
     collectgarbage("collect")
 
     for i = 1, #battle.party_members do
+        battle.party_members[i].isdefending = false
+        if battle.party_members[i].hp > 0 then battle.party_members[i]:set_animation(0) end
         UIs[i]:subtext("* A wild battle commentary appeared!")
     end
 
@@ -219,10 +221,9 @@ local function ExecuteCommands()
 
     if current_party_member <= #battle.party_members then
         if Commands[current_party_member][1] then --Ensure that the Command for a downed partyMember is empty.
-            print("Command executed")
             UIs[current_party_member]:subtext(Commands[current_party_member][2])
             CommandReturned = Commands[current_party_member][1]()
-            print(CommandReturned)
+            print("Command executed: "..CommandReturned.." by: "..battle.party_members[current_party_member].name)
         end
     end
     if CommandReturned == "DEFCOMMAND" then
@@ -317,7 +318,6 @@ function love.keypressed(key)
         elseif key == "z" then
             love.audio.play(SND_SELECT)
             selected_enemy = enemies[Sole.currentmenuposition]
-            selected_enemy = enemies[Sole.currentmenuposition]
             selected_enemies[current_party_member] = enemies[Sole.currentmenuposition]
 
             enemies_to_attack[#enemies_to_attack+1] = selected_enemy
@@ -349,7 +349,7 @@ function love.keypressed(key)
         if key == "x" then
             love.audio.play(SND_SELECT)
             UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
-            UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", battle)
+            UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", {}, battle)
             battle.party_members[current_party_member]:set_animation(0)
         elseif key == "z" then
             love.audio.play(SND_SELECT)
@@ -380,10 +380,11 @@ function love.keypressed(key)
 
 
                 battle.party_members[current_party_member]:act(selected_enemies[current_party_member], actname[current_party_member], UIs[current_party_member])
+                return "ACTCOMMAND"
 
             end
 
-            Commands[current_party_member][2] = battle.act_sub_subs[selected_enemies[current_party_member]][actindex[current_party_member]][4]
+            Commands[current_party_member][2] = battle.act_sub_subs[selected_enemies[current_party_member]][actindex[current_party_member]][4](battle.party_members)
 
             --Go back to the Battle UI or move on to executing every command?
             current_party_member = current_party_member + 1
@@ -401,14 +402,21 @@ function love.keypressed(key)
             Sole:updatePos(-1)
         elseif key == "right" then
             Sole:updatePos(1)
+        end
 
+    elseif battle.current_state == "ITEMUI" then
+        if key == "x" then
+            love.audio.play(SND_SELECT)
+            UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
+            UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", {}, battle)
+            battle.party_members[current_party_member]:set_animation(0)
         end
 
     elseif battle.current_state == "SPAREUI" then
         if key == "x" then
             love.audio.play(SND_SELECT)
             UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
-            UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", battle)
+            UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", {}, battle)
             battle.party_members[current_party_member]:set_animation(0)
         elseif key == "z" then
             love.audio.play(SND_SELECT)
@@ -496,11 +504,11 @@ function love.draw()
         end
     end
 
-    Enemysub:draw(battle.current_state)
+    battle.Enemysub:draw(battle.current_state)
 
-    Mizzle1sub:draw(battle.current_state)
-    Mizzle2sub:draw(battle.current_state)
-    Mizzle3sub:draw(battle.current_state)
+    for i = 1, #battle.Enemysubsubs do
+        battle.Enemysubsubs[i]:draw(battle.current_state)
+    end
 
     for i = 1, #battlebars do
         battlebars[i]:draw()

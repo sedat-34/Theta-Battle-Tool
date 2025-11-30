@@ -2,13 +2,13 @@
 --With this new object I aim to turn this project into a proper engine
 --[[Goals I have with this file:
 
-    1) Many global variables will be pulled from the encounter object
+    1) Many previously global variables will be pulled from the encounter object
     2) The code here will serve as an example encounter to modify
-        This will be much easier to modify compared to main.lua, as that also contains engine code
+        This will be much easier to modify compared to main.lua, as it contained engine code alongside the encounter configuration
 ]]
 Encounter = Object:extend()
 
-function Encounter:new() --Called once in love.load(). Initialise all your variables and arrays here.
+function Encounter:new() --Called once in love.load(). Initialise all your encounter-specific variables and arrays here.
 
     self.Box = Battlebox()
 
@@ -29,8 +29,7 @@ function Encounter:new() --Called once in love.load(). Initialise all your varia
 
     local kris_buttons = { --Generally FIGHT/ACT/ITEM/SPARE/DEFEND but I used ATTACK for some reason
                            --And because it's written all over the code I can't change it anymore
-                           --A monster party member could use MAGIC.
-                           --Or a custom member could get custom behaviour and custom submenus. Go wild!
+                           --A monster party member could use MAGIC through the ACT menu
         [1] = {"attack"},
         [2] = {"act"},
         [3] = {"item"},
@@ -80,13 +79,9 @@ function Encounter:new() --Called once in love.load(). Initialise all your varia
         [5] = {"mizzleHurtPink", 1, 1, true, 0, 0}
     }
 
-    local mizzle_1 = Mizzle("Mizzr", 980, 102, mizzle_anims, 0, 3, 1000)
-    local mizzle_2 = Mizzle("Mizzy", 980, 202, mizzle_anims, 0, 3, 1000)
-    local mizzle_3 = Mizzle("Mizzle", 980, 302, mizzle_anims, 0, 3, 1000)
-
-    enemies[1] = mizzle_1
-    enemies[2] = mizzle_2
-    enemies[3] = mizzle_3
+    enemies[1] = Mizzle("Mizzr", 980, 102, mizzle_anims, 0, 3, 1000)
+    enemies[2] = Mizzle("Mizzy", 980, 252, mizzle_anims, 0, 3, 1000)
+    enemies[3] = Mizzle("Mizzle", 980, 402, mizzle_anims, 0, 3, 1000)
 
     --Submenus and their options
     --These get used to generate the submenus' text and their positions
@@ -100,29 +95,30 @@ function Encounter:new() --Called once in love.load(). Initialise all your varia
     }
 
     self.act_sub_subs = { --ACT -> enemies[i] (in your original array) -> These show up
-
         [enemies[1]] = { --Handle these in enemies[1]:act(actname)
-            [1] = {"* Alarm", 218, 771, "* Mizzr is awoken!\n* This sounds like a bad idea."},
-            [2] = {"* Lullaby", 778, 771, "* Somebody sung a lullaby!\n* Not as good as Ralsei's, but it worked."},
+            [1] = {"* Alarm", 218, 771, function () return "* Mizzr is awoken!\n* This sounds like a bad idea." end},
+            [2] = {"* Lullaby", 778, 771, function (party_members) return"* "..party_members[current_party_member].name.." sung a lullaby!\n* Not as good as Ralsei's, but it worked." end},
         },
         [enemies[2]] = {
             [1] = {"* Alarm", 218, 771, "* Mizzy is awoken!\n* This sounds like a bad idea."},
-            [2] = {"* Lullaby", 778, 771, "* Somebody sung a lullaby!\n* Not as good as Ralsei's, but it worked."},
+            [2] = {"* Lullaby", 778, 771, function (party_members) return"* "..party_members[current_party_member].name.." sung a lullaby!\n* Not as good as Ralsei's, but it worked." end},
         },
         [enemies[3]] = {
             [1] = {"* Alarm", 218, 771, "* Mizzle is awoken!\n* This sounds like a bad idea."},
-            [2] = {"* Lullaby", 778, 771, "* Somebody sung a lullaby!\n* Not as good as Ralsei's, but it worked."},
+            [2] = {"* Lullaby", 778, 771, function (party_members) return"* "..party_members[current_party_member].name.." sung a lullaby!\n* Not as good as Ralsei's, but it worked." end},
         },
     }
 
-    Enemysub = Submenu(Enemysubarray, {"ATTACKUI", "ACTUI", "SPAREUI"}, nil)
+    self.Enemysub = Submenu(Enemysubarray, {"ATTACKUI", "ACTUI", "SPAREUI"}, nil)
 
-    Mizzle1sub = Submenu(self.act_sub_subs[enemies[1]], {"ACTSUBSUB"}, enemies[1])
-    Mizzle2sub = Submenu(self.act_sub_subs[enemies[2]], {"ACTSUBSUB"}, enemies[2])
-    Mizzle3sub = Submenu(self.act_sub_subs[enemies[3]], {"ACTSUBSUB"}, enemies[3])
+    self.Enemysubsubs = {
+        Submenu(self.act_sub_subs[enemies[1]], {"ACTSUBSUB"}, enemies[1]),
+        Submenu(self.act_sub_subs[enemies[2]], {"ACTSUBSUB"}, enemies[2]),
+        Submenu(self.act_sub_subs[enemies[3]], {"ACTSUBSUB"}, enemies[3]),
+    }
 
     --Load fonts!
-    Battlefont = love.graphics.newFont("fonts/8bitOperatorPlus-Bold.ttf", 28)
+    Battlefont = love.graphics.newFont("fonts/8bitOperatorPlus-Bold.ttf", 30)
     Goldenfont = love.graphics.newImageFont("sprites/goldennumeralfont.png", "0123456789+-%/ ")--The mercy increased font
 
     love.graphics.setFont(Battlefont)
