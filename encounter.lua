@@ -100,11 +100,11 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
             [2] = {"* Lullaby", 778, 771, function (party_members) return"* "..party_members[current_party_member].name.." sung a lullaby!\n* Not as good as Ralsei's, but it worked." end},
         },
         [enemies[2]] = {
-            [1] = {"* Alarm", 218, 771, function () return "* Mizzr is awoken!\n* This sounds like a bad idea." end},
+            [1] = {"* Alarm", 218, 771, function () return "* Mizzy is awoken!\n* This sounds like a bad idea." end},
             [2] = {"* Lullaby", 778, 771, function (party_members) return"* "..party_members[current_party_member].name.." sung a lullaby!\n* Not as good as Ralsei's, but it worked." end},
         },
         [enemies[3]] = {
-            [1] = {"* Alarm", 218, 771, function () return "* Mizzr is awoken!\n* This sounds like a bad idea." end},
+            [1] = {"* Alarm", 218, 771, function () return "* Mizzle is awoken!\n* This sounds like a bad idea." end},
             [2] = {"* Lullaby", 778, 771, function (party_members) return"* "..party_members[current_party_member].name.." sung a lullaby!\n* Not as good as Ralsei's, but it worked." end},
         },
     }
