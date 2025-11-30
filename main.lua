@@ -112,8 +112,10 @@ function love.update(dt)
     end
 
     if battle.current_state == "BATTLEOVER" then
-    UIs[current_party_member]:subtext("* Battle is over!\n* Press any key to exit")
-    Sole:updatePosArray(nil)
+        for i = 1, #battle.party_members do
+            UIs[i]:subtext("* Battle is over!\n* Press any key to exit")
+        end
+        Sole:updatePosArray(nil)
     end
 
     collectgarbage("collect")
