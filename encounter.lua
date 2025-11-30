@@ -29,8 +29,7 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
 
     local kris_buttons = { --Generally FIGHT/ACT/ITEM/SPARE/DEFEND but I used ATTACK for some reason
                            --And because it's written all over the code I can't change it anymore
-                           --A monster party member could use MAGIC.
-                           --Or a custom member could get custom behaviour and custom submenus. Go wild!
+                           --A monster party member could use MAGIC through the ACT menu
         [1] = {"attack"},
         [2] = {"act"},
         [3] = {"item"},
@@ -81,8 +80,8 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
     }
 
     enemies[1] = Mizzle("Mizzr", 980, 102, mizzle_anims, 0, 3, 1000)
-    enemies[2] = Mizzle("Mizzy", 980, 202, mizzle_anims, 0, 3, 1000)
-    enemies[3] = Mizzle("Mizzle", 980, 302, mizzle_anims, 0, 3, 1000)
+    enemies[2] = Mizzle("Mizzy", 980, 252, mizzle_anims, 0, 3, 1000)
+    enemies[3] = Mizzle("Mizzle", 980, 402, mizzle_anims, 0, 3, 1000)
 
     --Submenus and their options
     --These get used to generate the submenus' text and their positions
@@ -96,18 +95,17 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
     }
 
     self.act_sub_subs = { --ACT -> enemies[i] (in your original array) -> These show up
-
         [enemies[1]] = { --Handle these in enemies[1]:act(actname)
-            [1] = {"* Alarm", 218, 771, "* Mizzr is awoken!\n* This sounds like a bad idea."},
-            [2] = {"* Lullaby", 778, 771, "* Somebody sung a lullaby!\n* Not as good as Ralsei's, but it worked."},
+            [1] = {"* Alarm", 218, 771, function () return "* Mizzr is awoken!\n* This sounds like a bad idea." end},
+            [2] = {"* Lullaby", 778, 771, function (party_members) return"* "..party_members[current_party_member].name.." sung a lullaby!\n* Not as good as Ralsei's, but it worked." end},
         },
         [enemies[2]] = {
             [1] = {"* Alarm", 218, 771, "* Mizzy is awoken!\n* This sounds like a bad idea."},
-            [2] = {"* Lullaby", 778, 771, "* Somebody sung a lullaby!\n* Not as good as Ralsei's, but it worked."},
+            [2] = {"* Lullaby", 778, 771, function (party_members) return"* "..party_members[current_party_member].name.." sung a lullaby!\n* Not as good as Ralsei's, but it worked." end},
         },
         [enemies[3]] = {
             [1] = {"* Alarm", 218, 771, "* Mizzle is awoken!\n* This sounds like a bad idea."},
-            [2] = {"* Lullaby", 778, 771, "* Somebody sung a lullaby!\n* Not as good as Ralsei's, but it worked."},
+            [2] = {"* Lullaby", 778, 771, function (party_members) return"* "..party_members[current_party_member].name.." sung a lullaby!\n* Not as good as Ralsei's, but it worked." end},
         },
     }
 
