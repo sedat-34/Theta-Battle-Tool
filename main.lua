@@ -223,7 +223,7 @@ local function ExecuteCommands()
         if Commands[current_party_member][1] then --Ensure that the Command for a downed partyMember is empty.
             UIs[current_party_member]:subtext(Commands[current_party_member][2])
             CommandReturned = Commands[current_party_member][1]()
-            print("Command executed: "..CommandReturned.." by: "..battle.party_members[current_party_member].name)
+            if CommandReturned then print("Command executed: "..CommandReturned.." by: "..battle.party_members[current_party_member].name) end
         end
     end
     if CommandReturned == "DEFCOMMAND" then
