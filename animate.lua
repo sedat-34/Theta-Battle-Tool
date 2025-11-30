@@ -20,7 +20,7 @@ function Animate(object, dt, specialcase)
                         if animation == object.currentanimation then
 
                             print(object.name.." animation ended. Changing "..animation.." => "..proceed)
-                            
+
                             object:set_animation(proceed)
                             isspecialcase = true
                             break
@@ -34,7 +34,7 @@ function Animate(object, dt, specialcase)
                     object.currentframecount = 1
 
                 end
-            
+
             end
 
         end
