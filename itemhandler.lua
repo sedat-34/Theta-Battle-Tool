@@ -1,8 +1,9 @@
 ItemHandler = Object:extend()
 
-function ItemHandler:new(items, itemsSubArray)
+function ItemHandler:new(items, itemsSubArray, ItemsSub)
     self.items = items
     self.itemsSubArray = itemsSubArray
+    self.itemsSub = ItemsSub
     self.selected_items = {}
 end
 

@@ -31,7 +31,7 @@ ARR_STATES = { --UI Buttons to states as used in battle.current_state
                --It still has a graphical difference (magic button over act button) but no functional one.
     "ATTACKUI",
     "ACTUI",
-    "ITEMUI",
+    "MEMBERUI",
     "SPAREUI",
     "DEFEND",
 }
@@ -414,7 +414,7 @@ function love.keypressed(key)
             UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", {}, battle)
             battle.party_members[current_party_member]:set_animation(0)
         elseif key == "z" then
-            UIs[current_party_member]:menuState(Sole, 0, 0, "ITEMUI", ItemHandler.itemsSubArray, battle)
+            UIs[current_party_member]:menuState(Sole, 631, 471, "ITEMUI", ItemMan.itemsSubArray, battle)
         elseif key == "left" then
             Sole:updatePos(-1)
         elseif key == "right" then
@@ -424,6 +424,10 @@ function love.keypressed(key)
     elseif battle.current_state == "ITEMUI" then
         if key == "x" then
             battle.current_state = "MEMBERUI"
+                elseif key == "left" then
+            Sole:updatePos(-1)
+        elseif key == "right" then
+            Sole:updatePos(1)
         end
 
     elseif battle.current_state == "SPAREUI" then
@@ -520,7 +524,7 @@ function love.draw()
 
     battle.Enemysub:draw(battle.current_state)
     battle.PartyMemberSubArray:draw(battle.current_state)
-    battle.ItemsSubarray:draw(battle.current_state)
+    ItemMan.itemsSub:draw(battle.current_state)
 
     for i = 1, #battle.Enemysubsubs do
         battle.Enemysubsubs[i]:draw(battle.current_state)

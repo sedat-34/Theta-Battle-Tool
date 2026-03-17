@@ -101,15 +101,16 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
 
     local items = {}
 
-    items[1] = Item("* FriedEgg", 100)
-    items[2] = Item("* Jalapeno", 120)
+    items[1] = Item("FriedEgg", 100)
+    items[2] = Item("Jalapeno", 120)
 
-    local ItemsSubarray = {
+    local ItemsSubArray = {
         [1] = {"* "..items[1].name, 218, 771},
         [2] = {"* "..items[2].name, 778, 771}
     }
+    local ItemsSub = Submenu(ItemsSubArray, {"ITEMUI"}, nil)
 
-    ItemHandler(items, ItemsSubarray)
+    ItemMan = ItemHandler(items, ItemsSubArray, ItemsSub)
 
     self.act_sub_subs = { --ACT -> enemies[i] (in your original array) -> These show up
         [enemies[1]] = { --Handle these in enemies[1]:act(actname)
@@ -135,7 +136,6 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
     }
 
     self.PartyMemberSubArray = Submenu(PartyMemberArray, {"MEMBERUI"}, nil)
-    self.ItemsSubarray = Submenu(ItemHandler.itemsSubArray, {"ITEMUI"}, nil)
 
     --Load fonts!
     Battlefont = love.graphics.newFont("fonts/8bitOperatorPlus-Bold.ttf", 30)
