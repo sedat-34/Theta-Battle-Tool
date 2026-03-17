@@ -11,6 +11,8 @@ require "battlebox"
 require "animate"
 require "bullet"
 require "encounter"
+require "item"
+require "itemhandler"
 flux = require "flux"
 tick = require "tick"
 
@@ -202,7 +204,7 @@ local function ExecuteAttack()
     if current_party_member > #battlebars then
 
         StartBULLETS()
-        
+
     end
 
 
