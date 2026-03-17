@@ -408,12 +408,22 @@ function love.keypressed(key)
             Sole:updatePos(1)
         end
 
-    elseif battle.current_state == "ITEMUI" then
+    elseif battle.current_state == "MEMBERUI" then
         if key == "x" then
-            love.audio.play(SND_SELECT)
             UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
             UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", {}, battle)
             battle.party_members[current_party_member]:set_animation(0)
+        elseif key == "z" then
+            UIs[current_party_member]:menuState(Sole, 0, 0, "ITEMUI", ItemHandler.itemsSubArray, battle)
+        elseif key == "left" then
+            Sole:updatePos(-1)
+        elseif key == "right" then
+            Sole:updatePos(1)
+        end
+
+    elseif battle.current_state == "ITEMUI" then
+        if key == "x" then
+            battle.current_state = "MEMBERUI"
         end
 
     elseif battle.current_state == "SPAREUI" then
@@ -509,6 +519,8 @@ function love.draw()
     end
 
     battle.Enemysub:draw(battle.current_state)
+    battle.PartyMemberSubArray:draw(battle.current_state)
+    battle.ItemsSubarray:draw(battle.current_state)
 
     for i = 1, #battle.Enemysubsubs do
         battle.Enemysubsubs[i]:draw(battle.current_state)
