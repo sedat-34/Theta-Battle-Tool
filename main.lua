@@ -272,7 +272,7 @@ function love.keypressed(key)
     --This if else statement is one of the cores of Theta Battle Tool
     --It handles a majority of the UI logic and every single UI-related state change
     --Do not edit this unless you're CERTAIN you know what you're doing.
-    --(Or have a backup, like the official one over at https://github.com/mrdumbguy/Theta-Battle-Tool)
+    --(Or have a backup, like the official one over at https://github.com/sedat-34/Theta-Battle-Tool)
 
     if battle.current_state == "BATTLEUI" then --The main battle menu. If you see the five buttons, you're in this state.
 
