@@ -56,6 +56,11 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
         Commands[i] = {}
     end
 
+    local PartyMemberArray = { --specifically used for the PartyMember submenu generation and nothing else
+        [1] = {"* "..self.party_members[1].name, 218, 771},
+        [2] = {"* "..self.party_members[2].name, 778, 771}
+    }
+
     Kris1UI = BattleUi("Kris1", "kris", "kris", kris_buttons, 308, 630, 1)
     Kris2UI = BattleUi("Kris2", "kris", "kris", kris_buttons, 628, 630, 2)
 
@@ -94,6 +99,19 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
         [3] = {"* "..enemies[3].name, 218, 851},
     }
 
+    local items = {}
+
+    items[1] = Item("FriedEgg", 100)
+    items[2] = Item("Jalapeno", 120)
+
+    local ItemsSubArray = {
+        [1] = {"* "..items[1].name, 218, 771},
+        [2] = {"* "..items[2].name, 778, 771}
+    }
+    local ItemsSub = Submenu(ItemsSubArray, {"ITEMUI"}, nil)
+
+    ItemMan = ItemHandler(items, ItemsSubArray, ItemsSub)
+
     self.act_sub_subs = { --ACT -> enemies[i] (in your original array) -> These show up
         [enemies[1]] = { --Handle these in enemies[1]:act(actname)
             [1] = {"* Alarm", 218, 771, function () return "* Mizzr is awoken!\n* This sounds like a bad idea." end},
@@ -116,6 +134,8 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
         Submenu(self.act_sub_subs[enemies[2]], {"ACTSUBSUB"}, enemies[2]),
         Submenu(self.act_sub_subs[enemies[3]], {"ACTSUBSUB"}, enemies[3]),
     }
+
+    self.PartyMemberSubArray = Submenu(PartyMemberArray, {"MEMBERUI"}, nil)
 
     --Load fonts!
     Battlefont = love.graphics.newFont("fonts/8bitOperatorPlus-Bold.ttf", 30)

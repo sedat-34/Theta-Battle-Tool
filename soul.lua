@@ -6,7 +6,7 @@ function Soul:new()
     self.y = 0
     self.size = 1.5
     
-    self.currentmenuposition = 0
+    self.currentmenuposition = 1
 
     self.top = 200
     self.bottom = 483
@@ -90,7 +90,7 @@ function Soul:update(dt, localcurrentstate)
 end
 
 function Soul:draw(localcurrentstate)
-    if self.positions and (localcurrentstate == "ATTACKUI" or localcurrentstate == "ACTUI" or localcurrentstate == "ACTSUBSUB" or localcurrentstate == "SPAREUI") then
+    if self.positions and (localcurrentstate == "ATTACKUI" or localcurrentstate == "ACTUI" or localcurrentstate == "ACTSUBSUB" or localcurrentstate == "SPAREUI" or localcurrentstate == "ITEMUI" or localcurrentstate == "MEMBERUI") then
         self.x = self.positions[self.currentmenuposition][2]
         self.y = self.positions[self.currentmenuposition][3]+8
         love.graphics.draw(self.image, self.x, self.y, 0, self.size, self.size)

@@ -11,6 +11,8 @@ require "battlebox"
 require "animate"
 require "bullet"
 require "encounter"
+require "item"
+require "itemhandler"
 flux = require "flux"
 tick = require "tick"
 
@@ -29,7 +31,7 @@ ARR_STATES = { --UI Buttons to states as used in battle.current_state
                --It still has a graphical difference (magic button over act button) but no functional one.
     "ATTACKUI",
     "ACTUI",
-    "ITEMUI",
+    "MEMBERUI",
     "SPAREUI",
     "DEFEND",
 }
@@ -202,7 +204,7 @@ local function ExecuteAttack()
     if current_party_member > #battlebars then
 
         StartBULLETS()
-        
+
     end
 
 
@@ -272,7 +274,7 @@ function love.keypressed(key)
     --This if else statement is one of the cores of Theta Battle Tool
     --It handles a majority of the UI logic and every single UI-related state change
     --Do not edit this unless you're CERTAIN you know what you're doing.
-    --(Or have a backup, like the official one over at https://github.com/mrdumbguy/Theta-Battle-Tool)
+    --(Or have a backup, like the official one over at https://github.com/sedat-34/Theta-Battle-Tool)
 
     if battle.current_state == "BATTLEUI" then --The main battle menu. If you see the five buttons, you're in this state.
 
@@ -406,12 +408,26 @@ function love.keypressed(key)
             Sole:updatePos(1)
         end
 
-    elseif battle.current_state == "ITEMUI" then
+    elseif battle.current_state == "MEMBERUI" then
         if key == "x" then
-            love.audio.play(SND_SELECT)
             UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
             UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", {}, battle)
             battle.party_members[current_party_member]:set_animation(0)
+        elseif key == "z" then
+            UIs[current_party_member]:menuState(Sole, 631, 471, "ITEMUI", ItemMan.itemsSubArray, battle)
+        elseif key == "left" then
+            Sole:updatePos(-1)
+        elseif key == "right" then
+            Sole:updatePos(1)
+        end
+
+    elseif battle.current_state == "ITEMUI" then
+        if key == "x" then
+            battle.current_state = "MEMBERUI"
+                elseif key == "left" then
+            Sole:updatePos(-1)
+        elseif key == "right" then
+            Sole:updatePos(1)
         end
 
     elseif battle.current_state == "SPAREUI" then
@@ -507,6 +523,8 @@ function love.draw()
     end
 
     battle.Enemysub:draw(battle.current_state)
+    battle.PartyMemberSubArray:draw(battle.current_state)
+    ItemMan.itemsSub:draw(battle.current_state)
 
     for i = 1, #battle.Enemysubsubs do
         battle.Enemysubsubs[i]:draw(battle.current_state)
