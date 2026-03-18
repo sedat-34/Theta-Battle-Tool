@@ -56,11 +56,6 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
         Commands[i] = {}
     end
 
-    local PartyMemberArray = { --specifically used for the PartyMember submenu generation and nothing else
-        [1] = {"* "..self.party_members[1].name, 218, 771},
-        [2] = {"* "..self.party_members[2].name, 778, 771}
-    }
-
     Kris1UI = BattleUi("Kris1", "kris", "kris", kris_buttons, 308, 630, 1)
     Kris2UI = BattleUi("Kris2", "kris", "kris", kris_buttons, 628, 630, 2)
 
@@ -135,7 +130,11 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
         Submenu(self.act_sub_subs[enemies[3]], {"ACTSUBSUB"}, enemies[3]),
     }
 
-    self.PartyMemberSubArray = Submenu(PartyMemberArray, {"MEMBERUI"}, nil)
+    self.PartyMemberSubArray = {
+        [1] = {"* "..self.party_members[1].name, 218, 771},
+        [2] = {"* "..self.party_members[2].name, 778, 771}
+    }
+    self.PartyMemberSub = Submenu(self.PartyMemberSubArray, {"MEMBERUI"}, nil)
 
     --Load fonts!
     Battlefont = love.graphics.newFont("fonts/8bitOperatorPlus-Bold.ttf", 30)

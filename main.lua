@@ -286,6 +286,7 @@ function love.keypressed(key)
             UIs[current_party_member]:subtext(nil)
             love.audio.play(SND_SELECT)
             UIs[current_party_member]:menuState(Sole, 631, 471, ARR_STATES[UIs[current_party_member].buttonmode], Enemysubarray, battle)
+            if battle.current_state == "MEMBERUI" then Sole:updatePosArray(battle.PartyMemberSubArray) end
             battle.party_members[current_party_member]:set_animation(ARR_STATES[UIs[current_party_member].buttonmode])
             if ARR_STATES[UIs[current_party_member].buttonmode] == "DEFEND" then
 
@@ -410,10 +411,13 @@ function love.keypressed(key)
 
     elseif battle.current_state == "MEMBERUI" then
         if key == "x" then
+            love.audio.play(SND_SELECT)
             UIs[current_party_member]:subtext("* A wild battle commentary appeared!")
             UIs[current_party_member]:menuState(Sole, 0, 0, "BATTLEUI", {}, battle)
             battle.party_members[current_party_member]:set_animation(0)
         elseif key == "z" then
+            --TODO: ADD SUPPORT FOR CUSTOM NEXT STATE. FOR NOW, THIS ONLY WORKS FOR ITEMS
+            love.audio.play(SND_SELECT)
             UIs[current_party_member]:menuState(Sole, 631, 471, "ITEMUI", ItemMan.itemsSubArray, battle)
         elseif key == "left" then
             Sole:updatePos(-1)
@@ -423,8 +427,9 @@ function love.keypressed(key)
 
     elseif battle.current_state == "ITEMUI" then
         if key == "x" then
-            battle.current_state = "MEMBERUI"
-                elseif key == "left" then
+            UIs[current_party_member]:menuState(Sole, 0, 0, "MEMBERUI", battle.PartyMemberSubArray, battle)
+            love.audio.play(SND_SELECT)
+        elseif key == "left" then
             Sole:updatePos(-1)
         elseif key == "right" then
             Sole:updatePos(1)
@@ -523,7 +528,7 @@ function love.draw()
     end
 
     battle.Enemysub:draw(battle.current_state)
-    battle.PartyMemberSubArray:draw(battle.current_state)
+    battle.PartyMemberSub:draw(battle.current_state)
     ItemMan.itemsSub:draw(battle.current_state)
 
     for i = 1, #battle.Enemysubsubs do

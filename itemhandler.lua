@@ -13,21 +13,11 @@ function ItemHandler:useItem(itemIndex, targetMember)
 
 end
 
-function ItemHandler:removeItem(item)
-    
-    local toRemove --index of the item to remove from the list
-    local lastItem = false
+function ItemHandler:removeItem(itemIndex) --Removes from the SubArray (and due to their link, from the Submenu)
 
-    for i = 1, #self.items do
-        if self.items[i] == item then
-            toRemove = i
-            print(i)
-            if toRemove == #self.items then lastItem = true end --if it's the last item the removal is simple.
-            print("lastEnemy: "..tostring(lastItem))
-        end
-    end
-
-    table.remove(self.items, toRemove)
+    local toRemove = itemIndex
+    local lastItem
+    if itemIndex ==  #self.items then lastItem = true else lastItem = false end
 
     if lastItem then --The super easy last item removal
         self.itemsSubArray[#self.itemsSubArray] = nil
@@ -40,4 +30,20 @@ function ItemHandler:removeItem(item)
         self.itemsSubArray[#self.itemsSubArray] = nil
     end
 
+end
+
+function ItemHandler:trueRemove() --Removes all used items from self.items based on the logged indices.
+    if #self.selected_items > 1 then
+
+        table.sort(self.selected_items)
+
+        for i = 1, #self.selected_items do
+            self.items[i] = nil
+        end
+
+        for i = #self.selected_items, 1, -1 do
+            if self.items[i] == nil then table.remove(self.items, i) end
+        end
+
+    end
 end
