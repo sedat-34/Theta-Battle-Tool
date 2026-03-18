@@ -155,8 +155,6 @@ function Mizzle:remove()
     --No leftovers (or the dish will cry)
     collectgarbage("collect")
 
-    return Enemysubarray
-
 end
 
 function Mizzle:spared()
