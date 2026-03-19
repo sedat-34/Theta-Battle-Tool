@@ -46,7 +46,7 @@ function Submenu:draw(localcurrentstate)
             love.graphics.setFont(Battlefont)
             love.graphics.setColor(1, 1, 1, 1)
 
-            if not self.targetenemy and enemies[i] and self.targetstate ~= "MEMBERUI" and self.targetstate = "ITEMUI" then --Sparable enemies show up as Yellow on all enemy submenus
+            if not self.targetenemy and enemies[i] and self.targetstate ~= "MEMBERUI" and self.targetstate == "ITEMUI" then --Sparable enemies show up as Yellow on all enemy submenus
                 if enemies[i].sparable then
                     love.graphics.setColor(1, 0.85, 0.3, 1)
                 end
