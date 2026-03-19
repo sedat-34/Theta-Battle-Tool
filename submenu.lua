@@ -4,7 +4,7 @@
 
 Submenu = Object:extend()
 
-function Submenu:new(posarray, targetstatearr, targetenemy)
+function Submenu:new(posarray, targetstatearr, targetenemy, isEnemyList)
     
     --These are absolutely REQUIRED. No exceptions.
     self.positions = posarray
@@ -22,6 +22,9 @@ function Submenu:new(posarray, targetstatearr, targetenemy)
             end
         end
     end
+
+    self.isEnemyList = isEnemyList
+
 end
 
 function Submenu:updatePosArray(posarray)
@@ -46,10 +49,8 @@ function Submenu:draw(localcurrentstate)
             love.graphics.setFont(Battlefont)
             love.graphics.setColor(1, 1, 1, 1)
 
-            if not self.targetenemy and enemies[i] and self.targetstate ~= "MEMBERUI" and self.targetstate ~= "ITEMUI" then --Sparable enemies show up as Yellow on all enemy submenus
-                if enemies[i].sparable then
-                    love.graphics.setColor(1, 0.85, 0.3, 1)
-                end
+            if self.isEnemyList and enemies[i].sparable then--Sparable enemies show up as Yellow on all enemy submenus
+                love.graphics.setColor(1, 0.85, 0.3, 1)
             end
 
             love.graphics.print(self.positions[i][1], self.positions[i][2], self.positions[i][3])

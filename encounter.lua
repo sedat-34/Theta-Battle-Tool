@@ -103,7 +103,7 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
         [1] = {"* "..items[1].name, 218, 771},
         [2] = {"* "..items[2].name, 778, 771}
     }
-    local ItemsSub = Submenu(ItemsSubArray, {"ITEMUI"}, nil)
+    local ItemsSub = Submenu(ItemsSubArray, {"ITEMUI"}, nil, false)
 
     ItemMan = ItemHandler(items, ItemsSubArray, ItemsSub)
 
@@ -122,19 +122,19 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
         },
     }
 
-    self.Enemysub = Submenu(Enemysubarray, {"ATTACKUI", "ACTUI", "SPAREUI"}, nil)
+    self.Enemysub = Submenu(Enemysubarray, {"ATTACKUI", "ACTUI", "SPAREUI"}, nil, true)
 
     self.Enemysubsubs = {
-        Submenu(self.act_sub_subs[enemies[1]], {"ACTSUBSUB"}, enemies[1]),
-        Submenu(self.act_sub_subs[enemies[2]], {"ACTSUBSUB"}, enemies[2]),
-        Submenu(self.act_sub_subs[enemies[3]], {"ACTSUBSUB"}, enemies[3]),
+        Submenu(self.act_sub_subs[enemies[1]], {"ACTSUBSUB"}, enemies[1], false),
+        Submenu(self.act_sub_subs[enemies[2]], {"ACTSUBSUB"}, enemies[2], false),
+        Submenu(self.act_sub_subs[enemies[3]], {"ACTSUBSUB"}, enemies[3], false),
     }
 
     self.PartyMemberSubArray = {
         [1] = {"* "..self.party_members[1].name, 218, 771},
         [2] = {"* "..self.party_members[2].name, 778, 771}
     }
-    self.PartyMemberSub = Submenu(self.PartyMemberSubArray, {"MEMBERUI"}, nil)
+    self.PartyMemberSub = Submenu(self.PartyMemberSubArray, {"MEMBERUI"}, nil, false)
 
     --Load fonts!
     Battlefont = love.graphics.newFont("fonts/8bitOperatorPlus-Bold.ttf", 30)
