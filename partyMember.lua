@@ -24,7 +24,7 @@ function PartyMember:new(name, xpos, ypos, animations, defaultframe, defaultanim
 
     self.animationframes = {}
 
-    for i = 0,#self.animations do --Load every frame of every animation, index them by number.
+    for i in ipairs(animations) do --Load every frame of every animation, index them by numbers
 
         --Adjust offset to match size
         self.animations[i][5] = self.animations[i][5] * self.size
@@ -58,7 +58,7 @@ end
 
 function PartyMember:draw()
 
-    if self.animationframes[self.currentanimation][math.floor(self.currentframecount)] and self.currentframe then
+    if self.animationframes[self.currentanimation]and self.currentframe then
 
         love.graphics.draw(self.currentframe, self.xpos + self.animations[self.currentanimation][5], self.ypos + self.animations[self.currentanimation][6], 0, self.size, self.size)
 

@@ -15,6 +15,8 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
     local kris_anims = {
         --The order of the first 10 animations must be the exact same for every party member.
         --Other misc. animations may be ordered on a per-character basis.
+        
+        --[id] = {"name", total number of frames, fps, loops, offsetX, offsetY}
         [0] = {"krisIdle", 6, 6, true, 0, 0},
         [1] = {"krisAttack", 8, 15, false, 0, -1},
         [2] = {"krisAct", 11, 11, false, 0, 0},

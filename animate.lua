@@ -1,6 +1,6 @@
 function Animate(object, dt, specialcase)
 
-    if object.animations then
+    if object.animations[object.currentanimation] then
         --PartyMember animations not nil, updating frame to display
         object.currentframecount = object.currentframecount+ dt * object.animations[object.currentanimation][3]
 
@@ -39,7 +39,9 @@ function Animate(object, dt, specialcase)
 
         end
 
-        object.currentframe = object.animationframes[object.currentanimation][math.floor(object.currentframecount)]
+        if object.animationframes[object.currentanimation] then
+            object.currentframe = object.animationframes[object.currentanimation][math.floor(object.currentframecount)]
+        end
 
     end
 
