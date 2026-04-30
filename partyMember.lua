@@ -1,5 +1,4 @@
 --The project now supports multiple party members!
---TODO: ADD SUPPORT FOR S-ACT and R-ACT
 
 PartyMember = Object:extend()
 
@@ -21,7 +20,6 @@ function PartyMember:new(name, xpos, ypos, animations, defaultquadrant, defaulta
     self.currentframe = nil
     self.currentframecount = 1
 
-    self.spritesheetarray = spritesheetarray
     self.spritesheetpng = spritesheetpng
     self.quadrants = {}
 

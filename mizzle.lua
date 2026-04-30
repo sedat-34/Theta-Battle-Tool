@@ -2,7 +2,7 @@
 
 Mizzle = Object:extend()
 
-function Mizzle:new(name, x, y, animations, defaultanim, size, maxhp)
+function Mizzle:new(name, x, y, animations, spritesheet, spritesheetarray, defaultanim, size, maxhp)
 
     self.name = name
     self.x = x
@@ -16,20 +16,25 @@ function Mizzle:new(name, x, y, animations, defaultanim, size, maxhp)
     self.type = "MIZZLE" --Not an argument. Define individually for every class.
 
     self.currentanimation = defaultanim
-    self.currentframe = nil
+    self.currentquadrant = nil
     self.currentframecount = 1
 
-    self.animationframes = {}
+    self.spritesheet = spritesheet
+
+    self.quadrants = {}
+
+    local sheetwidth, sheetheight = spritesheetarray.meta.size.w, spritesheetarray.meta.size.h
 
     for i = 0,#self.animations do
 
         self.animations[i][5] = self.animations[i][5] * self.size
         self.animations[i][6] = self.animations[i][6] * self.size
 
-        self.animationframes[i] = {}
+        self.quadrants[i] = {}
 
         for j = 1,animations[i][2] do
-            self.animationframes[i][j] = love.graphics.newImage("sprites/"..self.animations[i][1].."/"..self.animations[i][1]..j..".png")
+            local localquad = spritesheetarray.frames[self.animations[i][1]..j..".png"].frame
+            self.quadrants[i][j] = love.graphics.newQuad(localquad.x, localquad.y, localquad.w, localquad.h, sheetwidth, sheetheight)
         end
 
     end
@@ -105,8 +110,8 @@ end
 
 function Mizzle:draw()
 
-    if self.currentframe then
-        love.graphics.draw(self.currentframe, self.x + self.animations[self.currentanimation][5], self.y + self.animations[self.currentanimation][6], 0, self.size, self.size)
+    if self.currentquadrant then
+        love.graphics.draw(self.spritesheet, self.currentquadrant, self.x + self.animations[self.currentanimation][5], self.y + self.animations[self.currentanimation][6], 0, self.size, self.size)
 
     end
 
@@ -191,7 +196,7 @@ function Mizzle:update(dt, localcurrentstate)
     end
 
     if self.hp > 0 then
-        Animate(self, dt)
+        AnimateQuadrants(self, dt)
     end
 
     if (self.hp <= 0 or self.mercied) and self.x >= 1750 then

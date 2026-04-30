@@ -90,9 +90,17 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
         [5] = {"mizzleHurtPink", 1, 1, true, 0, 0}
     }
 
-    enemies[1] = Mizzle("Mizzr", 980, 102, mizzle_anims, 0, 3, 1000)
-    enemies[2] = Mizzle("Mizzy", 980, 252, mizzle_anims, 0, 3, 1000)
-    enemies[3] = Mizzle("Mizzle", 980, 402, mizzle_anims, 0, 3, 1000)
+    local mizzlesheet = love.graphics.newImage("sprites/mizzle.png")
+    local mizzlearr
+    local mizzlejson = io.open("sprites/mizzle.json", "r")
+    if mizzlejson then
+        local tempmizzlearr = mizzlejson:read("*a")
+        mizzlearr = json.decode(tempmizzlearr)
+    end
+
+    enemies[1] = Mizzle("Mizzr", 980, 102, mizzle_anims, mizzlesheet, mizzlearr, 0, 3, 1000)
+    enemies[2] = Mizzle("Mizzy", 980, 252, mizzle_anims, mizzlesheet, mizzlearr, 0, 3, 1000)
+    enemies[3] = Mizzle("Mizzle", 980, 402, mizzle_anims, mizzlesheet, mizzlearr, 0, 3, 1000)
 
     --Submenus and their options
     --These get used to generate the submenus' text and their positions
