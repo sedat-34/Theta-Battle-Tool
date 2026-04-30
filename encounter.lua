@@ -43,10 +43,19 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
         [5] = 9
     }
 
-    local kris_1 = PartyMember("Kris1", 100, 202, kris_anims, "krisplace.png", 0, krisSpecialLoops, 4, 203, 35, 10)
+    local krissheet = love.graphics.newImage("sprites/krissheet.png")
+    local krissheetarr
+    local krisjson = io.open("sprites/krissheet.json", "r")
+    if krisjson then
+        local tempkrissheetarr = krisjson:read("*a")
+        krissheetarr = json.decode(tempkrissheetarr)
+        krisjson:close()
+    end
+
+    local kris_1 = PartyMember("Kris1", 100, 202, kris_anims, "krisplace.png", 0, krisSpecialLoops, krissheetarr, krissheet, 4, 203, 35, 10)
     kris_1:set_animation("ATTACK")
 
-    local kris_2 = PartyMember("Kris2", 100, 402, kris_anims, "krisplace.png", 0, krisSpecialLoops, 4, 203, 35, 10)
+    local kris_2 = PartyMember("Kris2", 100, 402, kris_anims, "krisplace.png", 0, krisSpecialLoops, krissheetarr, krissheet, 4, 203, 35, 10)
     kris_2:set_animation("ATTACK")
 
     self.party_members = {

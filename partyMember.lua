@@ -3,13 +3,12 @@
 
 PartyMember = Object:extend()
 
-function PartyMember:new(name, xpos, ypos, animations, defaultframe, defaultanim, animationSpecialLoops, size, maxhp, ATK, DEF)
+function PartyMember:new(name, xpos, ypos, animations, defaultquadrant, defaultanim, animationSpecialLoops, spritesheetarray, spritesheetpng, size, maxhp, ATK, DEF)
 
     self.name = name
     self.xpos = xpos
     self.ypos = ypos
     self.animations = animations
-    self.defaultframe = love.graphics.newImage("sprites/"..defaultframe)
     self.defaultanim = defaultanim
     self.size = size
     self.maxhp = maxhp
@@ -22,21 +21,28 @@ function PartyMember:new(name, xpos, ypos, animations, defaultframe, defaultanim
     self.currentframe = nil
     self.currentframecount = 1
 
-    self.animationframes = {}
+    self.spritesheetarray = spritesheetarray
+    self.spritesheetpng = spritesheetpng
+    self.quadrants = {}
 
-    for i in ipairs(animations) do --Load every frame of every animation, index them by numbers
+    local sheetwidth, sheetheight = spritesheetarray.meta.size.w, spritesheetarray.meta.size.h
 
-        --Adjust offset to match size
-        self.animations[i][5] = self.animations[i][5] * self.size
-        self.animations[i][6] = self.animations[i][6] * self.size
+    for i = 0,#self.animations do --Load every frame of every animation, index them by numbers
 
-        self.animationframes[i] = {}
+        self.quadrants[i] = {}
 
-        for j = 1,animations[i][2] do
-            self.animationframes[i][j] = love.graphics.newImage("sprites/"..self.animations[i][1].."/"..self.animations[i][1]..j..".png")
+        for j = 1, animations[i][2] do
+            local filename = animations[i][1]..j..".png"
+            local quaddata = spritesheetarray.frames[filename]
+            self.quadrants[i][j] = love.graphics.newQuad(quaddata.frame.x, quaddata.frame.y, quaddata.frame.w, quaddata.frame.h, sheetwidth, sheetheight)
         end
 
     end
+
+    local defaultfilename = defaultquadrant
+    local defaultquaddata = spritesheetarray.frames[defaultfilename]
+
+    self.defaultquadrant = love.graphics.newQuad(defaultquaddata.frame.x, defaultquaddata.frame.y, defaultquaddata.frame.w, defaultquaddata.frame.h, sheetwidth, sheetheight)
 
     self.isdefending = false
 
@@ -58,14 +64,14 @@ end
 
 function PartyMember:draw()
 
-    if self.animationframes[self.currentanimation]and self.currentframe then
+    if self.quadrants[self.currentanimation] and self.currentquadrant then
 
-        love.graphics.draw(self.currentframe, self.xpos + self.animations[self.currentanimation][5], self.ypos + self.animations[self.currentanimation][6], 0, self.size, self.size)
+        love.graphics.draw(self.spritesheetpng, self.currentquadrant, self.xpos + self.animations[self.currentanimation][5], self.ypos + self.animations[self.currentanimation][6], 0, self.size, self.size)
 
     else
 
         --If a frame somehow doesn't exist, this is displayed.
-         love.graphics.draw(self.defaultframe, self.xpos, self.ypos, 0, self.size, self.size)
+         love.graphics.draw(self.spritesheetpng, self.defaultquadrant, self.xpos, self.ypos, 0, self.size, self.size)
 
     end
 
@@ -127,7 +133,7 @@ function PartyMember:update(dt)
         self.isdefending = false
         self:set_animation(0)
     end
-    Animate(self, dt, self.animationSpecialLoops)
+    AnimateQuadrants(self, dt, self.animationSpecialLoops)
 end
 
 function PartyMember:act(local_enemy, actname, ui)

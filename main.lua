@@ -15,6 +15,7 @@ require "item"
 require "itemhandler"
 flux = require "flux"
 tick = require "tick"
+json = require "json"
 
 --Best for blurless scaling
 love.graphics.setDefaultFilter( "nearest", "nearest", 1)
