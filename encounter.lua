@@ -155,7 +155,7 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
 
     --Load certain feedback sprites (Recruit, Lost, Frozen etc.)
     LOST = love.graphics.newImage("sprites/LOST.png")
-    RECRUIT = love.graphics.newImage("sprites/recruit.png")
+    RECRUIT = love.graphics.newImage("sprites/RECRUIT.png")
 
     --The very culmination of your being ;)
     Sole = Soul() --It's named "Sole" because the object name cannot be the class name.
