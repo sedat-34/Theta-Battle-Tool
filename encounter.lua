@@ -78,7 +78,7 @@ function Encounter:new() --Called once in love.load(). Initialise all your encou
     current_party_member = 1
 
     --Background
-    self.Bg = Background("b", 100, 30)
+    self.Bg = Background("b")
 
     --Enemy related data
     local mizzle_anims = {
