@@ -3,7 +3,7 @@ Background = Object:extend()
 function Background:new(name, length, FPS)
 
     self.sheet = love.graphics.newImage("sprites/"..name..".png")
-    
+
     local sheetarr
     local sheetjson = io.open("sprites/"..name..".json", "r")
     if sheetjson then
