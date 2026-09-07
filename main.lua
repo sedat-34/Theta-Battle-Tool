@@ -75,6 +75,37 @@ local SplashSong = love.audio.newSource("music/flowery.ogg", "stream")
 local typedName = ""
 --used to track how long since the last time typedName was truncated.
 local typedNameTruncCounter = 0
+--the filedata of the encounter
+local encounterdata
+
+--check how long esc. was held down for. Returns to title at 3 seconds.
+--also used to update the "Quitting" sprite displayed at the top left
+local escapeHeldTimer = 0
+
+--The actual sprite and quadrant data for "Quitting...."
+local quittingImage = love.graphics.newImage("sprites/quitting.png")
+local quittingJsonRaw = love.filesystem.read("sprites/quitting.json")
+local quittingQuadrantData = json.decode(quittingJsonRaw)
+quittingJsonRaw = nil
+
+local quittingsheetwidth = 435
+local quittingsheetheight = 10
+
+local quittingQuadrants = {}
+for i = 0, 4 do
+    local localQuadData = quittingQuadrantData.frames[tostring(i)].frame
+    quittingQuadrants[i] = love.graphics.newQuad(localQuadData.x, localQuadData.y, localQuadData.w, localQuadData.h, quittingsheetwidth, quittingsheetheight)
+end
+
+--Technically invalid syntax but equivalent to setting all 3 to nil
+quittingsheetheight, quittingsheetwidth, quittingQuadrantData = nil
+
+
+--Debug variables! Currently there's only one, as FPS is the only "debug" value shown on-scren.
+--I don't plan on making these values toggleable in-game
+--As for printed debug statements, they won't be toggleable at all as they can't bother someone who doesn't purposefully launch it via lovec from the terminal.
+local DisplayFPS = false
+
 --[[
     Although you can, I'd advise against placing anything battle-specific here.
     That kind of defeats the point of having made an engine instead of a messily-coded fangame.
@@ -98,13 +129,10 @@ local function startBattle()
     selected_enemies = {}
 
     local path = "encounters/"..typedName..".zip"
-    local encounterdata, err = love.filesystem.newFileData(path)
+    encounterdata = love.filesystem.newFileData(path)
 
     if encounterdata then
-        love.filesystem.mount(encounterdata, "mountedbattle", "", true)
-    end
-
-    if encounterdata then
+        love.filesystem.mount(encounterdata, typedName..".zip", "", true)
         SplashSong:stop()
         Controller:load()
         battling = true
@@ -115,6 +143,19 @@ local function startBattle()
 
 end
 
+local function returnToTitle()
+    battling = false
+    errorMountingLastTime = false
+    Controller.encounter.MUS_Battlemusic:stop()
+    Controller.encounter = {}
+    Controller:returnToTitle()
+    local success = love.filesystem.unmount(typedName..".zip")
+    print("File unmounted:")
+    print(success)
+    encounterdata = nil
+    typedName = ""
+end
+
 function love.update(dt)
 
     if battling then
@@ -122,7 +163,7 @@ function love.update(dt)
 
         for i = 1, #battlebars do
             if battlebars[i] then
-                battlebars[i]:update(dt, Controller.battle.enemies, enemies_to_attack, members_to_attack)
+                battlebars[i]:update(dt, Controller.encounter.enemies, enemies_to_attack, members_to_attack)
             end
         end
 
@@ -132,9 +173,9 @@ function love.update(dt)
 
         local allenemiesdead = true
 
-        for i = 1, #Controller.battle.enemies do
-            if Controller.battle.enemies[i] then
-                if Controller.battle.enemies[i].hp > 0 then
+        for i = 1, #Controller.encounter.enemies do
+            if Controller.encounter.enemies[i] then
+                if Controller.encounter.enemies[i].hp > 0 then
                     allenemiesdead = false
                     break
                 end
@@ -143,8 +184,8 @@ function love.update(dt)
 
         local allmembersdead = true
 
-        for i = 1, #Controller.battle.party_members do
-            if Controller.battle.party_members[i].hp > 0 then
+        for i = 1, #Controller.encounter.party_members do
+            if Controller.encounter.party_members[i].hp > 0 then
                 allmembersdead = false
             end
         end
@@ -152,6 +193,16 @@ function love.update(dt)
         if allenemiesdead or allmembersdead then
             Controller:setState("BATTLEOVER")
             Controller:BATTLEOVER()
+        end
+        if love.keyboard.isDown("escape") then
+            escapeHeldTimer = escapeHeldTimer + dt
+            if escapeHeldTimer >= 3 then
+                print("ESC held for 3 secs or more, returning to title screen.")
+                escapeHeldTimer = 0
+                returnToTitle()
+            end
+        else
+            escapeHeldTimer = 0
         end
     else
         if not SplashSong:isPlaying() then
@@ -171,12 +222,12 @@ end
 
 local function BULLETSCleanup()
 
-    Controller.battle.Box:set_animation("closing")
+    Controller.encounter.Box:set_animation("closing")
 
     --Collect garbage and reset to first non-downed party member. If all are downed, set to 1 and trigger BATTLEOVER with a "You Lost" subtext.
     local noOneLeft = true
-    for i = 1, #Controller.battle.party_members do
-        if Controller.battle.party_members[i].hp > 0 then
+    for i = 1, #Controller.encounter.party_members do
+        if Controller.encounter.party_members[i].hp > 0 then
             Controller:setPartyMember(i)
             noOneLeft = false
             break
@@ -223,15 +274,15 @@ local function ExecuteAttack(enemies)
             local k = 1
             local baroffsetcoefficient = 1 --Used to position the battlebars correctly
 
-            while k < #Controller.battle.party_members + 1 do
-                if Controller.battle.party_members[k] == members_to_attack[i] then
+            while k < #Controller.encounter.party_members + 1 do
+                if Controller.encounter.party_members[k] == members_to_attack[i] then
                     baroffsetcoefficient = k
                     print("baroffsetcoefficient: "..baroffsetcoefficient)
                 end
                 k = k+1
             end
 
-            battlebars[i] = BattleBar(900+100*baroffsetcoefficient, 738+41*1.5*(baroffsetcoefficient-1), i,Controller.battle.party_members)
+            battlebars[i] = BattleBar(900+100*baroffsetcoefficient, 738+41*1.5*(baroffsetcoefficient-1), i,Controller.encounter.party_members)
 
         end
 
@@ -269,18 +320,18 @@ local function ExecuteCommands()
     Controller:setPartyMember(Controller:getPartyMember() + 1)
 
     local isMemberDowned
-    if Controller.battle.party_members[Controller:getPartyMember()] then
-        isMemberDowned = Controller.battle.party_members[Controller:getPartyMember()].hp <= 0
+    if Controller.encounter.party_members[Controller:getPartyMember()] then
+        isMemberDowned = Controller.encounter.party_members[Controller:getPartyMember()].hp <= 0
     end
 
     if isMemberDowned then
-        if Controller:getPartyMember() == #Controller.battle.party_members then
+        if Controller:getPartyMember() == #Controller.encounter.party_members then
             if #members_to_attack > 0 then
 
             Controller:setPartyMember(1)
 
-            for i = 1, #Controller.battle.party_members do
-                Controller.battle.UIs[i]:subtext("")
+            for i = 1, #Controller.encounter.party_members do
+                Controller.encounter.UIs[i]:subtext("")
             end
             Controller:setState("ATTACKING")
             ExecuteAttack()
@@ -295,41 +346,41 @@ local function ExecuteCommands()
 
     print("Controller:getPartyMember() @ COMMANDS: "..Controller:getPartyMember())
 
-    if Controller:getPartyMember() <= #Controller.battle.party_members then
+    if Controller:getPartyMember() <= #Controller.encounter.party_members then
         if Controller:getCommand(Controller:getPartyMember(), 1) then --TODO Ensure that the Command for a downed partyMember is empty.
-            Controller.battle.UIs[Controller:getPartyMember()]:subtext(Controller:getCommand(Controller:getPartyMember(),2))
+            Controller.encounter.UIs[Controller:getPartyMember()]:subtext(Controller:getCommand(Controller:getPartyMember(),2))
             CommandReturned = Controller:runCommand(Controller:getPartyMember(), 1)
             if CommandReturned then
-                print("Command executed: "..CommandReturned.." by: "..Controller.battle.party_members[Controller:getPartyMember()].name)
+                print("Command executed: "..CommandReturned.." by: "..Controller.encounter.party_members[Controller:getPartyMember()].name)
             end
         end
         if CommandReturned == "DEFCOMMAND" then
-            Controller.battle.party_members[Controller:getPartyMember()].isdefending = true
+            Controller.encounter.party_members[Controller:getPartyMember()].isdefending = true
             print("Member defended! Now running Executecommands()")
             ExecuteCommands()
             return
         elseif CommandReturned == "ATTACKCOMMAND" then
-            members_to_attack[#members_to_attack+1] = Controller.battle.party_members[Controller:getPartyMember()]
+            members_to_attack[#members_to_attack+1] = Controller.encounter.party_members[Controller:getPartyMember()]
             print("Latest member to attack: "..members_to_attack[#members_to_attack].name)
             ExecuteCommands()
             return
         end
     end
 
-    if Controller:getPartyMember() >= #Controller.battle.party_members + 1 then
+    if Controller:getPartyMember() >= #Controller.encounter.party_members + 1 then
 
         Controller:BULLETSCleanup()
 
-        for i = 1, #Controller.battle.party_members do
-            Controller.battle.party_members[i].hpup = nil
+        for i = 1, #Controller.encounter.party_members do
+            Controller.encounter.party_members[i].hpup = nil
         end
 
         if #members_to_attack > 0 then
 
             Controller:setPartyMember(1)
 
-            for i = 1, #Controller.battle.party_members do
-                Controller.battle.UIs[i]:subtext("")
+            for i = 1, #Controller.encounter.party_members do
+                Controller.encounter.UIs[i]:subtext("")
             end
             Controller:setState("ATTACKING")
             ExecuteAttack()
@@ -360,19 +411,16 @@ function love.keypressed(key)
 
         if Controller:getState() == "COMMANDS" then
 
-            if Controller:getPartyMember() <= #Controller.battle.party_members then
+            if Controller:getPartyMember() <= #Controller.encounter.party_members then
                 ExecuteCommands()
             end
 
         elseif Controller:getState() == "ATTACKING" and key == "z" then
 
-            ExecuteAttack(Controller.battle.enemies)
+            ExecuteAttack(Controller.encounter.enemies)
 
         elseif Controller:getState() == "BATTLEOVER" then
-            battling = false
-            errorMountingLastTime = false
-            Controller.battle.MUS_Battlemusic:pause()
-            love.filesystem.unmount("mountedbattle")
+            returnToTitle()
         end
 
         if Controller:getState() ~= "BULLETS" then
@@ -386,14 +434,14 @@ function love.keypressed(key)
         selected_enemies, enemies_to_attack, actname, actindex, remainingDowned = Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname, actindex)
 
         --Go back to the Battle UI or move on to executing every command?
-        if (Controller.doneNavigating and Controller:getPartyMember() > #Controller.battle.party_members) or remainingDowned then
+        if (Controller.doneNavigating and Controller:getPartyMember() > #Controller.encounter.party_members) or remainingDowned then
             Controller:setPartyMember(0)
             Controller:setState("COMMANDS")
             ExecuteCommands()
             Controller.Soul:updatePosArray(nil)
         elseif Controller.doneNavigating and Controller:getState() ~= "BULLETS" and Controller:getState() ~= "COMMANDS" and Controller:getState() ~= "ATTACKING" then
-            Controller.battle.UIs[Controller:getPartyMember()]:subtext("* A wild battle commentary appeared!")
-            Controller.battle.UIs[Controller:getPartyMember()]:menuState(Controller.Soul, 0, 0, "BATTLEUI", {})
+            Controller.encounter.UIs[Controller:getPartyMember()]:subtext("* A wild battle commentary appeared!")
+            Controller.encounter.UIs[Controller:getPartyMember()]:menuState(Controller.Soul, 0, 0, "BATTLEUI", {})
             Controller:setState("BATTLEUI")
             Controller.doneNavigating = false
             selected_enemy = nil
@@ -443,12 +491,27 @@ function love.draw()
 
         Controller:drawForeground()
 
-        for i = 1, #Controller.battle.UIs do
-            Controller.battle.UIs[i]:draw(Controller:getState(), Controller.battle.party_members)
+        for i = 1, #Controller.encounter.UIs do
+            Controller.encounter.UIs[i]:draw(Controller:getState(), Controller.encounter.party_members)
         end
 
         for i = 1, #battlebars do
             battlebars[i]:draw()
+        end
+
+        if escapeHeldTimer > 0 then
+            local index = math.floor(escapeHeldTimer*5/3)
+            love.graphics.setColor(1, 1, 1)
+            local yposition
+            if DisplayFPS then
+                yposition = 50
+            else
+                yposition = 0
+            end
+
+            if quittingQuadrants[index] then
+                love.graphics.draw(quittingImage, quittingQuadrants[index], 0, yposition, 0, 3, 3)
+            end
         end
 
     else
@@ -466,21 +529,25 @@ function love.draw()
 
     end
 
-    local FPS = love.timer.getFPS()
+    if DisplayFPS then
 
-    if FPS >= 30 then
-        love.graphics.setColor(0,1,0,1)
-    elseif 30 >= FPS and FPS > 15 then
-        love.graphics.setColor(1,1,0,1)
-    elseif FPS < 15 then
-        love.graphics.setColor(1,0,0,1)
+        local FPS = love.timer.getFPS()
+
+        if FPS >= 30 then
+            love.graphics.setColor(0,1,0,1)
+        elseif 30 >= FPS and FPS > 15 then
+            love.graphics.setColor(1,1,0,1)
+        elseif FPS < 15 then
+            love.graphics.setColor(1,0,0,1)
+        end
+
+        love.graphics.setFont(Battlefont)
+        love.graphics.print("FPS:"..FPS, 0, 0, 0, 1, 1)
+
+        FPS = nil
+
     end
 
-    love.graphics.setFont(Battlefont)
-    love.graphics.print("FPS:"..FPS, 0, 0, 0, 1, 1)
-
     tlfres.endRendering()
-
-    FPS = nil
 
 end

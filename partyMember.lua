@@ -96,8 +96,8 @@ function PartyMember:attack(local_enemy, mult, enemies)
 
     local selectedEnemyIndex
 
-    for i = 1, #Controller.battle.enemies do
-        if Controller.battle.enemies[i] == local_enemy then
+    for i = 1, #Controller.encounter.enemies do
+        if Controller.encounter.enemies[i] == local_enemy then
             selectedEnemyIndex = i
             break
         end
@@ -105,10 +105,10 @@ function PartyMember:attack(local_enemy, mult, enemies)
 
     if selectedEnemyIndex == nil or local_enemy.hp <= 0 then
         local_enemy = nil
-        for i = 1, #Controller.battle.enemies do
-            print(Controller.battle.enemies[i].name.." hp is "..Controller.battle.enemies[i].hp)
-            if Controller.battle.enemies[i].hp > 0 then
-                local_enemy = Controller.battle.enemies[i]
+        for i = 1, #Controller.encounter.enemies do
+            print(Controller.encounter.enemies[i].name.." hp is "..Controller.encounter.enemies[i].hp)
+            if Controller.encounter.enemies[i].hp > 0 then
+                local_enemy = Controller.encounter.enemies[i]
                 selectedEnemyIndex = i
                 break
             end

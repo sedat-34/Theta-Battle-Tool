@@ -35,9 +35,28 @@ function BulletManager:load(spritesheet, spritequadrants, bulletpatterns)
         self.spritequadrants[key] = love.graphics.newQuad(localquad.x, localquad.y, localquad.w, localquad.h, sheetwidth, sheetheight)
     end
 
-    self.bulletpatterns = bulletpatterns
+    self.bulletpatterns = {}
+    for i = 1, #bulletpatterns do
+        self.bulletpatterns[i] = {}
+        local requireString = bulletpatterns[i]
+        print("Requirestring: "..requireString)
+        self.bulletpatterns[i].patternfunction = require(requireString) --Only wrapped in tostring because LÖVE got angry
+        self.bulletpatterns[i].filename = requireString
+    end
 
     self.currentbulletpattern = 1 --Failsafe
+end
+
+function BulletManager:quitBattle()
+    --Unload loaded bullet patterns from memory.
+    for __, pattern in ipairs(self.bulletpatterns) do
+        package.loaded[pattern.filename] = nil
+        _G[pattern.filename] = nil
+    end
+    --Unsure whether these would leak to another encounter, but better safe than sorry.
+    self.bulletpatterns = nil
+    self.spritesheet = nil
+    self.spritequadrants = nil
 end
 
 --Set the index for the bullet pattern to be used in the next update cycle. Ideally call right before or right after the "BULLETS" state.
@@ -47,7 +66,7 @@ end
 
 --Update bullet related information via the bullet pattern function at the current index.
 function BulletManager:applyPattern(dt)
-    self.bulletpatterns[self.currentbulletpattern](self, dt)
+    self.bulletpatterns[self.currentbulletpattern].patternfunction(self, dt)
 end
 
 function BulletManager:draw(current_state)
