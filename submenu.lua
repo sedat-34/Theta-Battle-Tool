@@ -4,17 +4,17 @@
 
 Submenu = Object:extend()
 
-function Submenu:new(posarray, targetstatearr, targetenemy, isEnemyList)
+function Submenu:new(posarray, targetstatearr, submenutype, targetobject)
 
     --These are absolutely REQUIRED. No exceptions.
-    self.positions = posarray
-    self.targetstatearr = targetstatearr
+    self.positions = posarray --Position array of the Soul
+    self.targetstatearr = targetstatearr --Array of encounter states where the submenu is displayed
 
-    --If targetenmy is nil, the submenu only appears if no enemy is selected
-    --Useful for when you select a button from the BattleUi() 
-    self.targetenemy = targetenemy
+    --"enemy", "enemylist", "partymember" or "other"
+    self.submenutype = submenutype
 
-    self.isEnemyList = isEnemyList
+    --if submenu type is "other", set to nil. otherwise set to the OBJECT (not index!) of the targeted member or enemy.
+    self.targetobject = targetobject
 
 end
 
@@ -34,13 +34,17 @@ function Submenu:draw(localcurrentstate, enemies)
         end
     end
 
-    if self.positions and targetstate and selected_enemy == self.targetenemy then
+    local objectmatches = false
+    if self.submenutype == "other" or self.submenutype == "enemylist" then objectmatches = true end
+    if self.submenutype == "enemy" and selected_enemy == self.targetobject then objectmatches = true end
+    if self.submenutype == "partymember" and Controller.encounter.party_members[Controller:getPartyMember()] == self.targetobject then objectmatches = true end
+    if targetstate and objectmatches then
         for i = 1, #self.positions do
 
             love.graphics.setFont(Battlefont)
             love.graphics.setColor(1, 1, 1, 1)
 
-            if self.isEnemyList and enemies[i].sparable then--Sparable enemies show up as Yellow on all enemy submenus
+            if self.submenutype == "enemylist" and enemies[i].sparable then--Sparable enemies show up as Yellow on all enemy submenus
                 love.graphics.setColor(1, 0.85, 0.3, 1)
             end
 

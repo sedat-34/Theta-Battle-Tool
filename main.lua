@@ -402,6 +402,13 @@ function love.mousepressed(x, y, button)
 
 end
 
+function love.textinput(text)
+    if not battling and (text ~= "enter" and text ~= "kpenter") then
+        typedName = typedName..text
+        if errorMountingLastTime then errorMountingLastTime = false end
+    end
+end
+
 function love.keypressed(key)
 
     if battling and (#Controller.encounter.party_members == 0 or #Controller.encounter.enemies == 0) then
@@ -459,13 +466,6 @@ function love.keypressed(key)
             if errorMountingLastTime then errorMountingLastTime = false end
         end
 
-    end
-end
-
-function love.textinput(text)
-    if not battling and (text ~= "enter" and text ~= "kpenter") then
-        typedName = typedName..text
-        if errorMountingLastTime then errorMountingLastTime = false end
     end
 end
 
