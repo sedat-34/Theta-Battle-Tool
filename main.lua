@@ -125,7 +125,6 @@ local function startBattle()
     enemies_to_attack = {}
     battlebars = {}
     actindex = {}
-    actindex = {}
     selected_enemies = {}
 
     local path = "encounters/"..typedName..".zip"
@@ -404,6 +403,11 @@ function love.mousepressed(x, y, button)
 end
 
 function love.keypressed(key)
+
+    if battling and (#Controller.encounter.party_members == 0 or #Controller.encounter.enemies == 0) then
+        returnToTitle()
+        return
+    end
 
     if battling then
 

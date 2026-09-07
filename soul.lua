@@ -92,7 +92,7 @@ function Soul:update(dt, localcurrentstate)
 end
 
 function Soul:draw(localcurrentstate)
-    if self.positions and (localcurrentstate == "ATTACKUI" or localcurrentstate == "ACTUI" or localcurrentstate == "ACTSUBSUB" or localcurrentstate == "SPAREUI" or localcurrentstate == "ITEMUI" or localcurrentstate == "MEMBERUI") then
+    if self.positions and (localcurrentstate == "ATTACKUI" or localcurrentstate == "ACTUI" or localcurrentstate == "ACTSUBSUB" or localcurrentstate == "SPAREUI" or localcurrentstate == "ITEMUI" or localcurrentstate == "MEMBERUI" or localcurrentstate == "MAGICUI" or localcurrentstate == "MAGICSUBSUB") then
         self.x = self.positions[self.currentmenuposition][2]
         self.y = self.positions[self.currentmenuposition][3]+8
         love.graphics.draw(self.image, self.x, self.y, 0, self.size, self.size)
