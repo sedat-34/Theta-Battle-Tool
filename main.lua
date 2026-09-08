@@ -172,13 +172,8 @@ function love.update(dt)
 
         local allenemiesdead = true
 
-        for i = 1, #Controller.encounter.enemies do
-            if Controller.encounter.enemies[i] then
-                if Controller.encounter.enemies[i].hp > 0 then
-                    allenemiesdead = false
-                    break
-                end
-            end
+        if #Controller.encounter.Enemysubarray > 0 then
+            allenemiesdead = false
         end
 
         local allmembersdead = true

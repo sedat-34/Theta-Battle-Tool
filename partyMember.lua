@@ -138,7 +138,6 @@ function PartyMember:act(local_enemy, actname, ui)
     print(self.name.." acted together with "..local_enemy.name)
     print("Current act: "..actname)
     self:set_animation("act")
-    local_enemy.mercyup = local_enemy.mercytable[actname]
     local_enemy:act(actname, ui) --Lets local_enemy handle the act
 end
 

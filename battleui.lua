@@ -51,7 +51,12 @@ function BattleUi:menuState(soul, x, y, currstate, posarray)
 end
 
 function BattleUi:subtext(subtext)
+    if type(subtext) == "string" or subtext == nil then
     self.subtextstr = subtext
+    elseif type(subtext) == "function" then
+        local subtextstr = subtext()
+        self.subtextstr = subtextstr
+    end
 end
 
 function BattleUi:draw(localcurrentstate, members)

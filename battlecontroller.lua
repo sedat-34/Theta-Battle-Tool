@@ -115,7 +115,7 @@ function Controller:BULLETSCleanup() --Self-explanotory.
     for i = 1, #self.encounter.party_members do
         self.Commands[i] = {}
         self.encounter.party_members[i].isdefending = false
-        if self.encounter.party_members[i].hp > 0 and self:getState() == "BULLETS" then self.encounter.party_members[i]:set_animation("idle") end
+        if self.encounter.party_members[i].hp > 0 and not self.encounter.party_members[i].isdefending then self.encounter.party_members[i]:set_animation("idle") end
         self.encounter.UIs[i]:subtext("* A wild battle commentary appeared!")
         self.encounter.UIs[i].buttonmode = 1
         self:setCommand(i, 1, nil)
@@ -199,7 +199,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             if self.encounter.party_members[self:getPartyMember()-1].hp <= 0 then --Block switching back to a downed party member.
                 local cantDecrease = true
                 local viableID = nil
-                for i = 1, #self.encounter.party_members do
+                for i = self:getPartyMember(), 1, -1 do
                     if self.encounter.party_members[i].hp > 0 then
                         cantDecrease = false
                         viableID = i
@@ -331,7 +331,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
 
         elseif key == "z" then
             if not actname then actname = {} end
-            actname[self:getPartyMember()] = self.Soul.positions[self.Soul.currentmenuposition][1]
+            actname[self:getPartyMember()] = self.encounter.act_sub_subs[selected_enemy][self.Soul.currentmenuposition].name
             actindex[self:getPartyMember()] = self.Soul.currentmenuposition
             love.audio.play(SND_SELECT)
             print(selected_enemies[self:getPartyMember()].name.." added to queue to be acted with.")
@@ -346,7 +346,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
 
             end)
 
-            self:setCommand(self:getPartyMember(), 2, self.encounter.act_sub_subs[selected_enemies[self:getPartyMember()]][actindex[self:getPartyMember()]].description(self.encounter.party_members))
+            self:setCommand(self:getPartyMember(), 2, self.encounter.act_sub_subs[selected_enemies[self:getPartyMember()]][actindex[self:getPartyMember()]].subtext(self.encounter.party_members[self:getPartyMember()]))
             self.doneNavigating = true
             self:setPartyMember(self:getPartyMember() + 1)
 
@@ -366,12 +366,12 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             self.encounter.party_members[self:getPartyMember()]:set_animation("idle")
         elseif key == "z" then
             love.audio.play(SND_SELECT)
+            actindex[self:getPartyMember()] = self.Soul.currentmenuposition
             if self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][self.Soul.currentmenuposition].targetType == "member" then
                 --Currently not supported.
             else
-                self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 0, 0, "MAGICSUBSUB", self.Enemysubarray)
+                self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 0, 0, "MAGICSUBSUB", self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]])
             end
-            actindex[self:getPartyMember()] = self.Soul.currentmenuposition
         elseif key == "left" then
             self.Soul:updatePos(-1)
         elseif key == "right" then
@@ -385,9 +385,31 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 0, 0, "MAGICUI", self.magicSubArrays[self.encounter.party_members[self:getPartyMember()]])
         elseif key == "z" then
             selected_enemies[self:getPartyMember()] = self.encounter.enemies[self.Soul.currentmenuposition]
-            self:setCommand(self:getPartyMember(), 1, self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][actindex[self:getPartyMember()]].magicFunction(selected_enemies[self:getPartyMember()]))
+            self:setCommand(self:getPartyMember(), 1, function ()
+
+                    if self:getState() == "COMMANDS" then self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][actindex[self:getPartyMember()]].magicFunction(selected_enemies[self:getPartyMember()]) end
+
+                    return "MAGICCOMMAND"
+
+                end)
+            local currentActName = self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][actindex[self:getPartyMember()]].name
+            local truncatedSpellName = string.sub(currentActName, string.len(currentActName) - 3, string.len(currentActName))
+            print(truncatedSpellName.. " is the truncatedSpellName")
+            if truncatedSpellName ~= "-ACT" then
+                self:setCommand(self:getPartyMember(), 2, self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][actindex[self:getPartyMember()]].subtext)
+            else
+                if not actname then actname = {} end
+                actname[self:getPartyMember()] = self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][actindex[self:getPartyMember()]].name
+                print()
+                print("actindex is"..actindex[self:getPartyMember()])
+                self:setCommand(self:getPartyMember(), 2, selected_enemies[self:getPartyMember()]:subtext(actname[self:getPartyMember()]))
+            end
             self.doneNavigating = true
             self:setPartyMember(self:getPartyMember() + 1)
+        elseif key == "left" then
+            self.Soul:updatePos(-1)
+        elseif key == "right" then
+            self.Soul:updatePos(1)
         end
 
     elseif self:getState() == "ITEMUI" then
