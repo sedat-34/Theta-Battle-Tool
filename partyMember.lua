@@ -159,4 +159,7 @@ function PartyMember:hpUp(hpup)
             tick.delay(function() self:set_animation("down") end, 1)
         end
     end
+
+    tick.delay(function () self.hpup = nil end, 1)
+
 end

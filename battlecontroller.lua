@@ -148,7 +148,7 @@ function Controller:BATTLEOVER()
             UI:subtext("* Battle is over, you win!\n* Press any key to exit.")
         end
     end
-    self.Soul:updatePosArray(nil)
+    self.Soul:updatePosArray(0)
 end
 
 function Controller:setCommand(partymemberindex, n, misc)
@@ -245,11 +245,11 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             print(ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode])
             if ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode] == "ITEMUI" then
                 if #self.encounter.ItemManager.itemsSubArray > 0 then
-                    self.Soul:updatePosArray(self.encounter.ItemManager.itemsSubArray)
+                    self.Soul:updatePosArray(#self.encounter.ItemManager.itemsSubArray)
                     self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 631, 471, "ITEMUI", self.encounter.ItemManager.itemsSubArray)
                 end
             elseif ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode] == "MAGICUI" then
-                self.Soul:updatePosArray(self.magicSubArrays[self.encounter.party_members[self:getPartyMember()]])
+                self.Soul:updatePosArray(#self.magicSubArrays[self.encounter.party_members[self:getPartyMember()]])
                 self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 631, 471, "MAGICUI", self.magicSubArrays[self.encounter.party_members[self:getPartyMember()]])
             else
                 self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 631, 471, ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode], self.Enemysubarray)
@@ -315,7 +315,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             selected_enemy = self.encounter.enemies[self.Soul.currentmenuposition]
             selected_enemies[self:getPartyMember()] = selected_enemy
             self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 0, 0, "ACTSUBSUB", self.encounter.act_sub_subs[selected_enemy])
-            self.Soul:updatePosArray(self.encounter.act_sub_subs[selected_enemy])
+            self.Soul:updatePosArray(#self.encounter.act_sub_subs[selected_enemy])
         elseif key == "left" then
             self.Soul:updatePos(-1)
         elseif key == "right" then
@@ -346,7 +346,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
 
             end)
 
-            self:setCommand(self:getPartyMember(), 2, self.encounter.act_sub_subs[selected_enemies[self:getPartyMember()]][actindex[self:getPartyMember()]][4](self.encounter.party_members))
+            self:setCommand(self:getPartyMember(), 2, self.encounter.act_sub_subs[selected_enemies[self:getPartyMember()]][actindex[self:getPartyMember()]].description(self.encounter.party_members))
             self.doneNavigating = true
             self:setPartyMember(self:getPartyMember() + 1)
 
@@ -366,7 +366,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             self.encounter.party_members[self:getPartyMember()]:set_animation("idle")
         elseif key == "z" then
             love.audio.play(SND_SELECT)
-            if self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][self.Soul.currentmenuposition].targetType == "memberTarget" then
+            if self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][self.Soul.currentmenuposition].targetType == "member" then
                 --Currently not supported.
             else
                 self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 0, 0, "MAGICSUBSUB", self.Enemysubarray)

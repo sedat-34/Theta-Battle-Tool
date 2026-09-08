@@ -22,7 +22,7 @@ function ItemManager:addItem(target_member_no, current_party_member)
         if self.items[i] == self.tempitem then itemIndex = i break end
     end
 
-    local tempitemindex = {self.items[itemIndex], itemIndex, self.itemsSubArray[#self.itemsSubArray][2], self.itemsSubArray[#self.itemsSubArray][3]}
+    local tempitemindex = {self.items[itemIndex], itemIndex}
     if self.tempitemsarray[1] then --If the tempitemsarray has any element at all
         table.insert(self.tempitemsarray, 1, tempitemindex)
     else
@@ -30,11 +30,8 @@ function ItemManager:addItem(target_member_no, current_party_member)
     end
 
 --Recreate the SubArray and items array as if the removed item (index itemIndex) never existed.
-    for i = itemIndex, #self.itemsSubArray-1 do
-        self.itemsSubArray[i][1] = self.itemsSubArray[i+1][1]
-    end
-    self.itemsSubArray[#self.itemsSubArray] = nil
-
+    
+    table.remove(self.itemsSubArray, itemIndex)
     table.remove(self.items, itemIndex)
 end
 
@@ -47,9 +44,7 @@ function ItemManager:undoAddition()
     for i = #self.itemsSubArray-1, index[2], -1 do
         self.itemsSubArray[i+1][1] = self.itemsSubArray[i][1]
     end
-    self.itemsSubArray[index[2]][1] = "* "..index[1].name
-    self.itemsSubArray[#self.itemsSubArray][2] = index[3]
-    self.itemsSubArray[#self.itemsSubArray][3] = index[4]
+    self.itemsSubArray[index[2]].name = index[1].name
 
     table.insert(self.items, index[2], index[1])
 

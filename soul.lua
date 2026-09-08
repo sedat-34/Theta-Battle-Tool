@@ -13,6 +13,14 @@ function Soul:new()
     self.left = 500
     self.right = 783
 
+    self.positions = {
+        [1] = {x = 218, y = 771},
+        [2] = {x = 778, y = 771},
+        [3] = {x = 218, y = 851},
+        [4] = {x = 778, y = 851},
+    }
+    self.numberOfAllowedPositions = 1 --Failsafe
+
     return self
 end
 
@@ -20,13 +28,13 @@ function Soul:updatePos(delta)
     love.audio.play(SND_MENUMOVE)
     local specialcase = false
     if delta == 1 then
-        if self.currentmenuposition + delta > #self.positions then
+        if self.currentmenuposition + delta > self.numberOfAllowedPositions then
             self.currentmenuposition = 1
             specialcase = true
         end
     elseif delta == -1 then
         if self.currentmenuposition + delta < 1 then
-            self.currentmenuposition = #self.positions
+            self.currentmenuposition = self.numberOfAllowedPositions
             specialcase = true
         end
     end
@@ -47,9 +55,9 @@ function Soul:centerInBox()
     self.y = (self.bottomLimit - self.topLimit)/2 + self.topLimit
 end
 
-function Soul:updatePosArray(posarray)
-        self.positions = posarray
-        self.currentmenuposition = 1
+function Soul:updatePosArray(numberOfAllowedPositions)
+    self.numberOfAllowedPositions = numberOfAllowedPositions
+    self.currentmenuposition = 1
 end
 
 function Soul:move(dt)
@@ -93,8 +101,8 @@ end
 
 function Soul:draw(localcurrentstate)
     if self.positions and (localcurrentstate == "ATTACKUI" or localcurrentstate == "ACTUI" or localcurrentstate == "ACTSUBSUB" or localcurrentstate == "SPAREUI" or localcurrentstate == "ITEMUI" or localcurrentstate == "MEMBERUI" or localcurrentstate == "MAGICUI" or localcurrentstate == "MAGICSUBSUB") then
-        self.x = self.positions[self.currentmenuposition][2]
-        self.y = self.positions[self.currentmenuposition][3]+8
+        self.x = self.positions[self.currentmenuposition].x
+        self.y = self.positions[self.currentmenuposition].y+8
         love.graphics.draw(self.image, self.x, self.y, 0, self.size, self.size)
     end
     if localcurrentstate == "BULLETS" then

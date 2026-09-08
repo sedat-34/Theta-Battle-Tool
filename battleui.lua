@@ -43,7 +43,7 @@ end
 function BattleUi:menuState(soul, x, y, currstate, posarray)
     Controller:setState(currstate)
     if posarray then
-        soul:updatePosArray(posarray)
+        soul:updatePosArray(#posarray)
     else
         soul.x = x
         soul.y = y
