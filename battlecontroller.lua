@@ -16,7 +16,7 @@ function Controller:load()
         self.magicSubArrays = self.encounter.magicSubArrays
     end
     if self.encounter.items and self.encounter.ItemSubArray then
-        self.encounter.ItemManager = ItemManager(self.encounter.items, self.encounter.ItemSubArray)
+        self.ItemManager = ItemManager(self.encounter.items, self.encounter.ItemSubArray)
     end
     self.encounter.ItemSub = Submenu(self.encounter.ItemSubArray, {"ITEMUI"}, "other", nil)
     self:BULLETSCleanup()
@@ -217,7 +217,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
                     return selected_enemies, enemies_to_attack, actname, actindex, nil
                 else
                     if self:runCommand(viableID, 1) == "ITEMCOMMAND" then --Check whether to 
-                        self.encounter.ItemManager:undoAddition()
+                        self.ItemManager:undoAddition()
                     end
                     self:setCommand(self:getPartyMember(), 1, nil)
                     self:setCommand(self:getPartyMember(), 2, nil)
@@ -232,7 +232,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             end
 
             if self:runCommand(self:getPartyMember()-1, 1) == "ITEMCOMMAND" then
-                self.encounter.ItemManager:undoAddition()
+                self.ItemManager:undoAddition()
             end
             self:setState("BATTLEUI")
             self:setCommand(self:getPartyMember(), 1, nil)
@@ -249,9 +249,9 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             --Quick exception for selecting items or magic versus any submenus with the enemy list
             print(ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode])
             if ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode] == "ITEMUI" then
-                if #self.encounter.ItemManager.itemsSubArray > 0 then
-                    self.Soul:updatePosArray(#self.encounter.ItemManager.itemsSubArray)
-                    self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 631, 471, "ITEMUI", self.encounter.ItemManager.itemsSubArray)
+                if #self.ItemManager.itemsSubArray > 0 then
+                    self.Soul:updatePosArray(#self.ItemManager.itemsSubArray)
+                    self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 631, 471, "ITEMUI", self.ItemManager.itemsSubArray)
                 end
             elseif ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode] == "MAGICUI" then
                 self.Soul:updatePosArray(#self.magicSubArrays[self.encounter.party_members[self:getPartyMember()]])
@@ -425,8 +425,8 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             self.encounter.party_members[self:getPartyMember()]:set_animation("idle")
         elseif key == "z" then
             love.audio.play(SND_SELECT)
-            self.encounter.ItemManager.tempitem = self.encounter.items[self.Soul.currentmenuposition]
-            print(self.encounter.ItemManager.tempitem.name)
+            self.ItemManager.tempitem = self.encounter.items[self.Soul.currentmenuposition]
+            print(self.ItemManager.tempitem.name)
             self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 0, 0, "MEMBERUI", self.encounter.PartyMemberSubArray)
         elseif key == "left" then
             self.Soul:updatePos(-1)
@@ -442,14 +442,14 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
         elseif key == "z" then
             love.audio.play(SND_SELECT)
 
-            local itemtext = self.encounter.ItemManager:generateItemText(self.Soul.currentmenuposition, self:getPartyMember(), self.encounter.party_members)
-            self.encounter.ItemManager:addItem(self.Soul.currentmenuposition, self:getPartyMember())
+            local itemtext = self.ItemManager:generateItemText(self.Soul.currentmenuposition, self:getPartyMember(), self.encounter.party_members)
+            self.ItemManager:addItem(self.Soul.currentmenuposition, self:getPartyMember())
 
             self:setCommand(self:getPartyMember(), 1,
 
                 function()
 
-                    if self:getState() == "COMMANDS" then self.encounter.ItemManager:useItem(self.encounter) end
+                    if self:getState() == "COMMANDS" then self.ItemManager:useItem(self.encounter) end
                     return "ITEMCOMMAND" --Functionally the same as an ACTCOMMAND, but labelled seperately for debugging purposes and code cleanliness.
 
                 end)
