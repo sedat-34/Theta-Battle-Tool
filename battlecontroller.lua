@@ -15,11 +15,16 @@ function Controller:load()
     if self.encounter.magicSubArrays then
         self.magicSubArrays = self.encounter.magicSubArrays
     end
+    if self.encounter.items and self.encounter.ItemSubArray then
+        self.encounter.ItemManager = ItemManager(self.encounter.items, self.encounter.ItemSubArray)
+    end
+    self.encounter.ItemSub = Submenu(self.encounter.ItemSubArray, {"ITEMUI"}, "other", nil)
     self:BULLETSCleanup()
 end
 
 function Controller:returnToTitle()
     package.loaded["encounter"] = nil
+    _G["encounter"] = nil
     BulletManager:quitBattle()
 end
 
