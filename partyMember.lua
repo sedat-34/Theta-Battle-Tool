@@ -89,7 +89,7 @@ function PartyMember:set_animation(animation)
     end
 end
 
-function PartyMember:attack(local_enemy, mult, enemies)
+function PartyMember:attack(local_enemy, mult)
 
     love.audio.play(SND_ATTACK)
     print(self.name.." attacked "..local_enemy.name)
@@ -127,9 +127,8 @@ function PartyMember:attack(local_enemy, mult, enemies)
 end
 
 function PartyMember:update(dt)
-    if current_state == "BATTLEUI" and self.isdefending then
-        self.isdefending = false
-        self:set_animation("idle")
+    if Controller:getState() == "BATTLEUI" then
+        if self.isdefending then self.isdefending = false end
     end
     AnimateQuadrants(self, dt, self.animationSpecialLoops)
 end

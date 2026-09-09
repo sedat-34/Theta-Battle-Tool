@@ -119,8 +119,6 @@ end
 function Controller:BULLETSCleanup() --Self-explanotory.
     for i = 1, #self.encounter.party_members do
         self.Commands[i] = {}
-        self.encounter.party_members[i].isdefending = false
-        if self.encounter.party_members[i].hp > 0 and not self.encounter.party_members[i].isdefending then self.encounter.party_members[i]:set_animation("idle") end
         self.encounter.UIs[i]:subtext("* A wild battle commentary appeared!")
         self.encounter.UIs[i].buttonmode = 1
         self:setCommand(i, 1, nil)
@@ -260,7 +258,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
                 self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 631, 471, ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode], self.Enemysubarray)
             end
 
-            if self:getState() ~= "BATTLEUI" then
+            if self:getState() ~= "BATTLEUI" and ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode] ~= "DEFEND" then
                 self.encounter.party_members[self:getPartyMember()]:set_animation(ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode])
             end
 

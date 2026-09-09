@@ -162,7 +162,7 @@ function love.update(dt)
 
         for i = 1, #battlebars do
             if battlebars[i] then
-                battlebars[i]:update(dt, Controller.encounter.enemies, enemies_to_attack, members_to_attack)
+                battlebars[i]:update(dt)
             end
         end
 
@@ -228,6 +228,13 @@ local function BULLETSCleanup()
         end
     end
 
+    for i = 1, #Controller.encounter.party_members do
+        if Controller.encounter.party_members[i].hp > 0 then
+            Controller.encounter.party_members[i].isdefending = false
+            Controller.encounter.party_members[i]:set_animation("idle")
+        end
+    end
+
     if noOneLeft then
         Controller:BATTLEOVER()
         Controller:setState("BATTLEOVER")
@@ -266,7 +273,7 @@ local function ExecuteAttack(enemies)
 
         for i = 1, #members_to_attack do
             local k = 1
-            local baroffsetcoefficient = 1 --Used to position the battlebars correctly
+            local baroffsetcoefficient = 1 --Used to position the battlebars correctly and get the correct partyMember index.
 
             while k < #Controller.encounter.party_members + 1 do
                 if Controller.encounter.party_members[k] == members_to_attack[i] then
@@ -276,14 +283,14 @@ local function ExecuteAttack(enemies)
                 k = k+1
             end
 
-            battlebars[i] = BattleBar(900+100*baroffsetcoefficient, 738+41*1.5*(baroffsetcoefficient-1), i,Controller.encounter.party_members)
+            battlebars[i] = BattleBar(900+100*baroffsetcoefficient, 738+41*1.5*(baroffsetcoefficient-1), baroffsetcoefficient, members_to_attack[i], enemies_to_attack[i])
 
         end
 
     elseif Controller:getPartyMember() <= #battlebars then
 
         if battlebars[Controller:getPartyMember()] then
-            battlebars[Controller:getPartyMember()]:attack(enemies, enemies_to_attack, members_to_attack)
+            battlebars[Controller:getPartyMember()]:attack()
         end
 
     end
@@ -350,6 +357,7 @@ local function ExecuteCommands()
         end
         if CommandReturned == "DEFCOMMAND" then
             Controller.encounter.party_members[Controller:getPartyMember()].isdefending = true
+            Controller.encounter.party_members[Controller:getPartyMember()]:set_animation("DEFEND")
             print("Member defended! Now running Executecommands()")
             ExecuteCommands()
             return
