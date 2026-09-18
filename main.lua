@@ -82,6 +82,11 @@ local encounterdata
 --also used to update the "Quitting" sprite displayed at the top left
 local escapeHeldTimer = 0
 
+--This object exists purely to let tick know how to cancel the BULLETSCleanup delay
+--This is necessary as without it, BULLETSCleanup gets called at the start of the next battle.
+
+local tickObjectForBULLETSCleanup
+
 --The actual sprite and quadrant data for "Quitting...."
 local quittingImage = love.graphics.newImage("sprites/quitting.png")
 local quittingJsonRaw = love.filesystem.read("sprites/quitting.json")
@@ -145,6 +150,10 @@ end
 local function returnToTitle()
     battling = false
     errorMountingLastTime = false
+    if tickObjectForBULLETSCleanup then
+        tick.remove(tickObjectForBULLETSCleanup)
+        tickObjectForBULLETSCleanup = nil
+    end
     Controller.encounter.MUS_Battlemusic:stop()
     Controller.encounter = {}
     Controller:returnToTitle()
@@ -257,7 +266,7 @@ local function StartBULLETS()
         collectgarbage("collect")
 
         Controller:StartBULLETS()
-        tick.delay(function() BULLETSCleanup() end, 5)
+        tickObjectForBULLETSCleanup = tick.delay(function() BULLETSCleanup() tickObjectForBULLETSCleanup = nil end, 5)
         Controller:setState("BULLETS")
 end
 

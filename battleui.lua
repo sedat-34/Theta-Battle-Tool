@@ -1,14 +1,15 @@
 BattleUi = Object:extend()
 
-function BattleUi:new(name, background, header, buttons, x, y, targetpartymember, sheetimage, sheetdata)
-    self.name = name
-    self.sheetimage = sheetimage
+function BattleUi:new(name, buttons, x, y, targetpartymember)
+    self.sheetimage = love.graphics.newImage("sprites/battleUI.png")
+    local BattleSheetQuadrant = love.filesystem.read("sprites/battleUI.json")
+    local sheetdata = json.decode(BattleSheetQuadrant)
     self.sheetwidth = sheetdata.meta.size.w
     self.sheetheight = sheetdata.meta.size.h
 
-    local bgquaddata = sheetdata.frames["ui_"..background..".png"].frame
+    local bgquaddata = sheetdata.frames["ui_"..name..".png"].frame
     self.backgroundquad = love.graphics.newQuad(bgquaddata.x, bgquaddata.y, bgquaddata.w, bgquaddata.h, sheetdata.meta.size.w, sheetdata.meta.size.h)
-    local headerquaddata = sheetdata.frames["header_"..header..".png"].frame
+    local headerquaddata = sheetdata.frames["header_"..name..".png"].frame
     self.headerquad = love.graphics.newQuad(headerquaddata.x, headerquaddata.y, headerquaddata.w, headerquaddata.h, sheetdata.meta.size.w, sheetdata.meta.size.h)
 
     self.subtextstr = nil

@@ -4,7 +4,7 @@ require "animate"
 
 PartyMember = Object:extend()
 
-function PartyMember:new(name, xpos, ypos, arr_button_states, animations, defaultquadrant, defaultanim, animationSpecialLoops, spritesheetarray, spritesheetpng, size, maxhp, ATK, DEF)
+function PartyMember:new(name, xpos, ypos, arr_button_states, animations, defaultquadrant, defaultanim, animationSpecialLoops, spritesheetjson, spritesheetpng, size, maxhp, ATK, DEF)
 
     self.name = name
     self.xpos = xpos
@@ -23,7 +23,8 @@ function PartyMember:new(name, xpos, ypos, arr_button_states, animations, defaul
     self.currentframe = nil
     self.currentframecount = 1
 
-    self.spritesheetpng = spritesheetpng
+    self.spritesheetpng = love.graphics.newImage(spritesheetpng)
+    local spritesheetarray = json.decode(love.filesystem.read(spritesheetjson))
     self.quadrants = {}
 
     local sheetwidth, sheetheight = spritesheetarray.meta.size.w, spritesheetarray.meta.size.h

@@ -2,13 +2,18 @@ local Controller = {}
 local BulletManager = require "bulletmanager"
 
 function Controller:load()
+    love.graphics.setFont(Battlefont)
     self.encounter = require "encounter"
+    self.encounter.current_state = "BATTLEUI"
+    self.encounter.UIs[1]:subtext("* Cool initial description")
     BulletManager:load(self.encounter.bulletSheetPath, self.encounter.bulletSheetDataPath, self.encounter.bulletPatterns)
     self.current_state = "BATTLEUI"
     self.Commands = {}
     self.doneNavigating = false
     self.current_party_member = 1
     self.Soul = require "soul"
+
+    --Pull data from encounter.lua's schema
     if self.encounter.Enemysubarray then
         self.Enemysubarray  = self.encounter.Enemysubarray
     end
@@ -18,11 +23,33 @@ function Controller:load()
     if self.encounter.items and self.encounter.ItemSubArray then
         self.ItemManager = ItemManager(self.encounter.items, self.encounter.ItemSubArray)
     end
+    self.encounter.Box = Battlebox()
+    self.encounter.ItemSubArray = {}
+    for i = 1, #self.encounter.items do
+        self.encounter.ItemSubArray[i] = {name = self.encounter.items[i].name}
+    end
     self.encounter.ItemSub = Submenu(self.encounter.ItemSubArray, {"ITEMUI"}, "other", nil)
+    self.encounter.PartyMemberSub = Submenu(self.encounter.PartyMemberSubArray, {"MEMBERUI"}, "other", nil)
+    self.encounter.Enemysub = Submenu(self.Enemysubarray, {"ATTACKUI", "ACTUI", "SPAREUI", "MAGICSUBSUB"}, "enemylist", nil)
+    self.encounter.Enemysubsubs = {}
+    for i = 1, #self.encounter.enemies do
+        self.encounter.Enemysubsubs[i] = Submenu(self.encounter.act_sub_subs[self.encounter.enemies[i]], {"ACTSUBSUB"}, "enemy", self.encounter.enemies[i])
+    end
+    self.encounter.magicSubmenus = {}
+    local iteratorForMagicSubarrays = 1
+    for member, __ in pairs(self.encounter.magicSubArrays) do
+        self.encounter.magicSubmenus[iteratorForMagicSubarrays] = Submenu(self.encounter.magicSubArrays[member], {"MAGICUI"}, "partymember", member)
+        iteratorForMagicSubarrays = iteratorForMagicSubarrays + 1
+    end
+    love.audio.play(self.encounter.MUS_Battlemusic)
     self:BULLETSCleanup()
 end
 
 function Controller:returnToTitle()
+    for __, v in pairs(self.encounter) do
+        v = nil
+    end
+    self.encounter = nil
     package.loaded["encounter"] = nil
     _G["encounter"] = nil
     BulletManager:quitBattle()
