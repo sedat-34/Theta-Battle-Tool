@@ -105,7 +105,6 @@ end
 --Technically invalid syntax but equivalent to setting all 3 to nil
 quittingsheetheight, quittingsheetwidth, quittingQuadrantData = nil
 
-
 --Debug variables! Currently there's only one, as FPS is the only "debug" value shown on-scren.
 --I don't plan on making these values toggleable in-game
 --As for printed debug statements, they won't be toggleable at all as they can't bother someone who doesn't purposefully launch it via lovec from the terminal.
@@ -114,7 +113,6 @@ local DisplayFPS = false
 --[[
     Although you can, I'd advise against placing anything battle-specific here.
     That kind of defeats the point of having made an engine instead of a messily-coded fangame.
-    (Also in the far future there's a chance support is added for an exchangable battle loader)
 ]]
 
 function love.load()
@@ -357,7 +355,7 @@ local function ExecuteCommands()
     print("Controller:getPartyMember() @ COMMANDS: "..Controller:getPartyMember())
 
     if Controller:getPartyMember() <= #Controller.encounter.party_members then
-        if Controller:getCommand(Controller:getPartyMember(), 1) then --TODO Ensure that the Command for a downed partyMember is empty.
+        if Controller:getCommand(Controller:getPartyMember(), 1) then
             Controller.encounter.UIs[Controller:getPartyMember()]:subtext(Controller:getCommand(Controller:getPartyMember(),2))
             CommandReturned = Controller:runCommand(Controller:getPartyMember(), 1)
             if CommandReturned then

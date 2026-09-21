@@ -14,33 +14,44 @@ function Controller:load()
     self.Soul = require "soul"
 
     --Pull data from encounter.lua's schema
-    if self.encounter.Enemysubarray then
-        self.Enemysubarray  = self.encounter.Enemysubarray
-    end
-    if self.encounter.magicSubArrays then
-        self.magicSubArrays = self.encounter.magicSubArrays
-    end
-    if self.encounter.items and self.encounter.ItemSubArray then
-        self.ItemManager = ItemManager(self.encounter.items, self.encounter.ItemSubArray)
-    end
-    self.encounter.Box = Battlebox()
-    self.encounter.ItemSubArray = {}
-    for i = 1, #self.encounter.items do
-        self.encounter.ItemSubArray[i] = {name = self.encounter.items[i].name}
-    end
-    self.encounter.ItemSub = Submenu(self.encounter.ItemSubArray, {"ITEMUI"}, "other", nil)
-    self.encounter.PartyMemberSub = Submenu(self.encounter.PartyMemberSubArray, {"MEMBERUI"}, "other", nil)
+
+    --Anything necessary for an encounter is checked with "assert", anything else is ifs and prints to log behaviour.
+    assert(self.encounter.Enemysubarray, "[encounter.lua]: Missing self.Enemysubarray")
+    self.Enemysubarray  = self.encounter.Enemysubarray
     self.encounter.Enemysub = Submenu(self.Enemysubarray, {"ATTACKUI", "ACTUI", "SPAREUI", "MAGICSUBSUB"}, "enemylist", nil)
     self.encounter.Enemysubsubs = {}
     for i = 1, #self.encounter.enemies do
         self.encounter.Enemysubsubs[i] = Submenu(self.encounter.act_sub_subs[self.encounter.enemies[i]], {"ACTSUBSUB"}, "enemy", self.encounter.enemies[i])
     end
-    self.encounter.magicSubmenus = {}
-    local iteratorForMagicSubarrays = 1
-    for member, __ in pairs(self.encounter.magicSubArrays) do
-        self.encounter.magicSubmenus[iteratorForMagicSubarrays] = Submenu(self.encounter.magicSubArrays[member], {"MAGICUI"}, "partymember", member)
-        iteratorForMagicSubarrays = iteratorForMagicSubarrays + 1
+
+    if self.encounter.magicSubArrays then
+        self.magicSubArrays = self.encounter.magicSubArrays
+        self.encounter.magicSubmenus = {}
+        local iteratorForMagicSubarrays = 1
+        for member, __ in pairs(self.encounter.magicSubArrays) do
+            self.encounter.magicSubmenus[iteratorForMagicSubarrays] = Submenu(self.encounter.magicSubArrays[member], {"MAGICUI"}, "partymember", member)
+            iteratorForMagicSubarrays = iteratorForMagicSubarrays + 1
+        end
+    else
+        print("[encounter.lua]: Missing self.magicSubArrays, expect weird behaviour for magic members.")
     end
+
+    if self.encounter.items and self.encounter.ItemSubArray then
+        self.ItemManager = ItemManager(self.encounter.items, self.encounter.ItemSubArray)
+        self.encounter.ItemSub = Submenu(self.encounter.ItemSubArray, {"ITEMUI"}, "other", nil)
+        self.encounter.ItemSubArray = {}
+        for i = 1, #self.encounter.items do
+            self.encounter.ItemSubArray[i] = {name = self.encounter.items[i].name}
+        end
+    else
+        print("[encounter.lua]: Missing self.items, expect weird behaviour")
+    end
+
+    self.encounter.Box = Battlebox()
+
+    assert(self.encounter.PartyMemberSub, "[encounter.lua]: Missing self.PartyMemberSub")
+    self.encounter.PartyMemberSub = Submenu(self.encounter.PartyMemberSubArray, {"MEMBERUI"}, "other", nil)
+
     love.audio.play(self.encounter.MUS_Battlemusic)
     self:BULLETSCleanup()
 end
@@ -274,9 +285,11 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             --Quick exception for selecting items or magic versus any submenus with the enemy list
             print(ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode])
             if ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode] == "ITEMUI" then
-                if #self.ItemManager.itemsSubArray > 0 then
-                    self.Soul:updatePosArray(#self.ItemManager.itemsSubArray)
-                    self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 631, 471, "ITEMUI", self.ItemManager.itemsSubArray)
+                if self.ItemManager then --Add failsafe conditional for itemless encounters
+                    if #self.ItemManager.itemsSubArray > 0 then
+                        self.Soul:updatePosArray(#self.ItemManager.itemsSubArray)
+                        self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 631, 471, "ITEMUI", self.ItemManager.itemsSubArray)
+                    end
                 end
             elseif ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode] == "MAGICUI" then
                 self.Soul:updatePosArray(#self.magicSubArrays[self.encounter.party_members[self:getPartyMember()]])
@@ -291,7 +304,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
 
             if ARR_STATES[self.encounter.UIs[self:getPartyMember()].buttonmode] == "DEFEND" then
 
-                --No extra commands neeed for the party member to defend
+                --No extra commands needed for the party member to defend
                 self:setCommand(self:getPartyMember(), 1,
                     function ()
                         return "DEFCOMMAND"
