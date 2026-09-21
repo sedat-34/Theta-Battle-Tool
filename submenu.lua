@@ -38,9 +38,9 @@ function Submenu:draw(localcurrentstate, enemies)
     end
 
     local objectmatches = false
-    if self.submenutype == "other" or self.submenutype == "enemylist" then objectmatches = true end
-    if self.submenutype == "enemy" and selected_enemy == self.targetobject then objectmatches = true end
-    if self.submenutype == "partymember" and Controller.encounter.party_members[Controller:getPartyMember()] == self.targetobject then objectmatches = true end
+    if self.submenutype == "other" or self.submenutype == "enemylist" then objectmatches = true
+    elseif self.submenutype == "enemy" and selected_enemy == self.targetobject then objectmatches = true
+    elseif self.submenutype == "partymember" and Controller.encounter.party_members[Controller:getPartyMember()] == self.targetobject then objectmatches = true end
     if targetstate and objectmatches then
         for i = 1, #self.list do
 

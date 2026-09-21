@@ -1,12 +1,13 @@
 local Controller = {}
 local BulletManager = require "bulletmanager"
+local BattlebarManager = require "battlebarmanager"
+local selected_enemies
 
 function Controller:load()
     love.graphics.setFont(Battlefont)
     self.encounter = require "encounter"
     self.encounter.current_state = "BATTLEUI"
     self.encounter.UIs[1]:subtext("* Cool initial description")
-    BulletManager:load(self.encounter.bulletSheetPath, self.encounter.bulletSheetDataPath, self.encounter.bulletPatterns)
     self.current_state = "BATTLEUI"
     self.Commands = {}
     self.doneNavigating = false
@@ -49,16 +50,28 @@ function Controller:load()
 
     self.encounter.Box = Battlebox()
 
-    assert(self.encounter.PartyMemberSub, "[encounter.lua]: Missing self.PartyMemberSub")
+    assert(self.encounter.PartyMemberSubArray, "[encounter.lua]: Missing self.PartyMemberSubArray")
     self.encounter.PartyMemberSub = Submenu(self.encounter.PartyMemberSubArray, {"MEMBERUI"}, "other", nil)
 
+    assert(self.encounter.bulletSheetPath, "[encounter.lua]: Missing self.bulletSheetPath")
+    assert(self.encounter.bulletSheetDataPath, "[encounter.lua]: Missing self.bulletSheetDataPath")
+    assert(self.encounter.bulletPatterns, "[encounter.lua]: Missing self.bulletPatterns")
+
+    --These two are used to generate the act, magic commands
+    self.encounter.actname = {}
+    self.encounter.actindex = {}
+
+    --Load local external modules' objects.
+    BulletManager:load(self.encounter.bulletSheetPath, self.encounter.bulletSheetDataPath, self.encounter.bulletPatterns)
+    BattlebarManager:load()
+    selected_enemies = {}
     love.audio.play(self.encounter.MUS_Battlemusic)
     self:BULLETSCleanup()
 end
 
 function Controller:returnToTitle()
-    for __, v in pairs(self.encounter) do
-        v = nil
+    for key, __ in pairs(self.encounter) do
+        self.encounter[key] = nil
     end
     self.encounter = nil
     package.loaded["encounter"] = nil
@@ -80,6 +93,41 @@ end
 
 function Controller:setPartyMember(current_party_member)
     self.current_party_member = current_party_member
+end
+
+function Controller:ProcessAttackCommand()
+    BattlebarManager.members_to_attack[#BattlebarManager.members_to_attack+1] = Controller.encounter.party_members[Controller:getPartyMember()]
+    print("Latest member to attack: "..BattlebarManager.members_to_attack[#BattlebarManager.members_to_attack].name)
+end
+
+function Controller:Attack()
+    if #BattlebarManager.members_to_attack > 0 and #BattlebarManager.battlebars == 0 then
+        print("BattlebarManager.members_to_attack: "..#BattlebarManager.members_to_attack)
+
+        for i = 1, #BattlebarManager.members_to_attack do
+            local k = 1
+            local baroffsetcoefficient = 1 --Used to position the BattlebarManager.battlebars correctly and get the correct partyMember index.
+
+            while k < #Controller.encounter.party_members + 1 do
+                if Controller.encounter.party_members[k] == BattlebarManager.members_to_attack[i] then
+                    baroffsetcoefficient = k
+                    print("baroffsetcoefficient: "..baroffsetcoefficient)
+                end
+                k = k+1
+            end
+
+            BattlebarManager.battlebars[i] = BattleBar(900+100*baroffsetcoefficient, 738+41*1.5*(baroffsetcoefficient-1), baroffsetcoefficient, BattlebarManager.members_to_attack[i], BattlebarManager.enemies_to_attack[i])
+
+        end
+
+    elseif Controller:getPartyMember() <= #BattlebarManager.battlebars then
+
+        if BattlebarManager.battlebars[Controller:getPartyMember()] then
+            BattlebarManager.battlebars[Controller:getPartyMember()]:attack()
+        end
+
+    end
+    return Controller:getPartyMember() > #BattlebarManager.battlebars
 end
 
 function Controller:drawBackground()
@@ -114,11 +162,14 @@ function Controller:drawForeground()
 
     self.Soul:draw(self:getState())
 
+    BattlebarManager:draw()
+
     BulletManager:draw(self:getState())
 
 end
 
 function Controller:StartBULLETS()
+    Controller:setState("BULLETS")
     Controller:setPartyMember(1)
     for i = 1, #Controller.encounter.party_members do
         Controller.encounter.UIs[i]:subtext("")
@@ -147,6 +198,8 @@ function Controller:update(dt)
 
     BulletManager:update(dt, self:getState())
 
+    BattlebarManager:update(dt)
+
     --print(love.mouse.getX().." , "..love.mouse.getY()) --I use this when checking positions in the UI.
 
     if not self.encounter.MUS_Battlemusic:isPlaying() then
@@ -162,6 +215,8 @@ function Controller:BULLETSCleanup() --Self-explanotory.
         self:setCommand(i, 1, nil)
         self:setCommand(i, 2, nil)
     end
+    self.encounter.actindex = {}
+    self.encounter.actname = {}
     self.doneNavigating = false
     self:setState("BATTLEUI")
 end
@@ -220,12 +275,138 @@ function Controller:handleDowned()
     return remainingDowned --Are all remaining party_members Downed?
 end
 
+local function ExecuteAttack()
+
+    print("ExecuteAttack()")
+    print("Controller:getPartyMember(): "..Controller:getPartyMember())
+
+    Controller:setState("ATTACKING")
+    local doneAttacking = Controller:Attack()
+
+    if doneAttacking then
+
+        Controller.doneNavigating = true
+
+        StartBULLETS()
+
+    end
+
+end
+
+--Don't touch this unless you are CERTAIN you know what you are doing.
+--This function handles every command passed through the UI.
+--That means all of FIGHT/ACT...MERCY is handled here.
+
+local function ExecuteCommands()
+
+    local CommandReturned = nil
+
+    Controller:setState("COMMANDS")
+
+    print("ExecuteCommands()")
+
+    Controller:setPartyMember(Controller:getPartyMember() + 1)
+
+    local isMemberDowned
+    if Controller.encounter.party_members[Controller:getPartyMember()] then
+        isMemberDowned = Controller.encounter.party_members[Controller:getPartyMember()].hp <= 0
+    end
+
+    if isMemberDowned then
+        if Controller:getPartyMember() == #Controller.encounter.party_members then
+            if #BattlebarManager.members_to_attack > 0 then
+
+                Controller:setPartyMember(1)
+
+                for i = 1, #Controller.encounter.party_members do
+                    Controller.encounter.UIs[i]:subtext("")
+                end
+                Controller:setState("ATTACKING")
+                BattlebarManager.ExecuteAttack()
+                return
+            else
+                Controller.doneNavigating = true
+                StartBULLETS()
+                return
+            end
+        end
+    end
+
+    print("Controller:getPartyMember() @ COMMANDS: "..Controller:getPartyMember())
+
+    if Controller:getPartyMember() <= #Controller.encounter.party_members then
+        if Controller:getCommand(Controller:getPartyMember(), 1) then
+            Controller.encounter.UIs[Controller:getPartyMember()]:subtext(Controller:getCommand(Controller:getPartyMember(),2))
+            CommandReturned = Controller:runCommand(Controller:getPartyMember(), 1)
+            if CommandReturned then
+                print("Command executed: "..CommandReturned.." by: "..Controller.encounter.party_members[Controller:getPartyMember()].name)
+            end
+        end
+        if CommandReturned == "DEFCOMMAND" then
+            Controller.encounter.party_members[Controller:getPartyMember()].isdefending = true
+            Controller.encounter.party_members[Controller:getPartyMember()]:set_animation("DEFEND")
+            print("Member defended! Now running Executecommands()")
+            ExecuteCommands()
+            return
+        elseif CommandReturned == "ATTACKCOMMAND" then
+            Controller:ProcessAttackCommand() --ATTACKCOMMAND handling requires variables local to Controller().
+            ExecuteCommands()
+            return
+        end
+    end
+
+    if Controller:getPartyMember() >= #Controller.encounter.party_members + 1 then
+
+        Controller:BULLETSCleanup()
+
+        for i = 1, #Controller.encounter.party_members do
+            Controller.encounter.party_members[i].hpup = nil
+        end
+
+        if #BattlebarManager.members_to_attack > 0 then
+
+            Controller:setPartyMember(1)
+
+            for i = 1, #Controller.encounter.party_members do
+                Controller.encounter.UIs[i]:subtext("")
+            end
+            Controller:setState("ATTACKING")
+            ExecuteAttack()
+            return
+        else
+            Controller.doneNavigating = true
+            StartBULLETS()
+            return
+        end
+
+    end
+
+end
+
+function Controller:CheckWhetherToRunACommand(key)
+
+    print("Controller's state = "..Controller:getState())
+
+    if Controller:getState() == "COMMANDS" then
+
+        if Controller:getPartyMember() <= #Controller.encounter.party_members then
+            ExecuteCommands()
+        end
+
+    elseif Controller:getState() == "ATTACKING" and key == "z" then
+
+        ExecuteAttack()
+
+    end
+ 
+end
 
 --This if else statement is one of the cores of Theta Battle Tool
 --It handles a majority of the UI logic and every single UI-related state change
 --Do not edit this unless you're CERTAIN you know what you're doing.
 --(Or have a backup, like the official one over at https://github.com/sedat-34/Theta-Battle-Tool)
-function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname, actindex)
+
+function Controller:heartBeat(key)
 
     local ARR_STATES = self.encounter.party_members[self:getPartyMember()].ARR_BUTTON_STATES
 
@@ -250,7 +431,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
 
 
                 if cantDecrease then
-                    return selected_enemies, enemies_to_attack, actname, actindex, nil
+                    return nil
                 else
                     if self:runCommand(viableID, 1) == "ITEMCOMMAND" then --Check whether to 
                         self.ItemManager:undoAddition()
@@ -262,7 +443,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
                     self.encounter.party_members[viableID]:set_animation("idle")
                     love.audio.play(SND_SELECT)
                     self:setPartyMember(viableID)
-                    return selected_enemies, enemies_to_attack, actname, actindex, nil
+                    return nil
                 end
 
             end
@@ -330,7 +511,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             selected_enemy = self.encounter.enemies[self.Soul.currentmenuposition]
             selected_enemies[self:getPartyMember()] = selected_enemy
 
-            enemies_to_attack[#enemies_to_attack+1] = selected_enemy
+            BattlebarManager.enemies_to_attack[#BattlebarManager.enemies_to_attack+1] = selected_enemy
             self:setCommand(self:getPartyMember(), 1,
 
             function ()
@@ -373,9 +554,9 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             self.encounter.party_members[self:getPartyMember()]:set_animation("idle")
 
         elseif key == "z" then
-            if not actname then actname = {} end
-            actname[self:getPartyMember()] = self.encounter.act_sub_subs[selected_enemy][self.Soul.currentmenuposition].name
-            actindex[self:getPartyMember()] = self.Soul.currentmenuposition
+            if not self.encounter.actname then self.encounter.actname = {} end
+            self.encounter.actname[self:getPartyMember()] = self.encounter.act_sub_subs[selected_enemy][self.Soul.currentmenuposition].name
+            self.encounter.actindex[self:getPartyMember()] = self.Soul.currentmenuposition
             love.audio.play(SND_SELECT)
             print(selected_enemies[self:getPartyMember()].name.." added to queue to be acted with.")
 
@@ -383,13 +564,13 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
 
             function()
 
-                if self:getState() == "COMMANDS" then self.encounter.party_members[self:getPartyMember()]:act(selected_enemies[self:getPartyMember()], actname[self:getPartyMember()], self.encounter.UIs[self:getPartyMember()]) end
+                if self:getState() == "COMMANDS" then self.encounter.party_members[self:getPartyMember()]:act(selected_enemies[self:getPartyMember()], self.encounter.actname[self:getPartyMember()], self.encounter.UIs[self:getPartyMember()]) end
 
                 return "ACTCOMMAND"
 
             end)
 
-            self:setCommand(self:getPartyMember(), 2, self.encounter.act_sub_subs[selected_enemies[self:getPartyMember()]][actindex[self:getPartyMember()]].subtext(self.encounter.party_members[self:getPartyMember()]))
+            self:setCommand(self:getPartyMember(), 2, self.encounter.act_sub_subs[selected_enemies[self:getPartyMember()]][self.encounter.actindex[self:getPartyMember()]].subtext(self.encounter.party_members[self:getPartyMember()]))
             self.doneNavigating = true
             self:setPartyMember(self:getPartyMember() + 1)
 
@@ -409,7 +590,7 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             self.encounter.party_members[self:getPartyMember()]:set_animation("idle")
         elseif key == "z" then
             love.audio.play(SND_SELECT)
-            actindex[self:getPartyMember()] = self.Soul.currentmenuposition
+            self.encounter.actindex[self:getPartyMember()] = self.Soul.currentmenuposition
             if self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][self.Soul.currentmenuposition].targetType == "member" then
                 --Currently not supported.
             else
@@ -430,22 +611,22 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
             selected_enemies[self:getPartyMember()] = self.encounter.enemies[self.Soul.currentmenuposition]
             self:setCommand(self:getPartyMember(), 1, function ()
 
-                    if self:getState() == "COMMANDS" then self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][actindex[self:getPartyMember()]].magicFunction(selected_enemies[self:getPartyMember()]) end
+                    if self:getState() == "COMMANDS" then self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][self.encounter.actindex[self:getPartyMember()]].magicFunction(selected_enemies[self:getPartyMember()]) end
 
                     return "MAGICCOMMAND"
 
                 end)
-            local currentActName = self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][actindex[self:getPartyMember()]].name
-            local truncatedSpellName = string.sub(currentActName, string.len(currentActName) - 3, string.len(currentActName))
+            local currentactname = self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][self.encounter.actindex[self:getPartyMember()]].name
+            local truncatedSpellName = string.sub(currentactname, string.len(currentactname) - 3, string.len(currentactname))
             print(truncatedSpellName.. " is the truncatedSpellName")
             if truncatedSpellName ~= "-ACT" then
-                self:setCommand(self:getPartyMember(), 2, self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][actindex[self:getPartyMember()]].subtext)
+                self:setCommand(self:getPartyMember(), 2, self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][self.encounter.actindex[self:getPartyMember()]].subtext)
             else
-                if not actname then actname = {} end
-                actname[self:getPartyMember()] = self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][actindex[self:getPartyMember()]].name
+                if not self.encounter.actname then self.encounter.actname = {} end
+                self.encounter.actname[self:getPartyMember()] = self.encounter.magicSubArrays[self.encounter.party_members[self:getPartyMember()]][self.encounter.actindex[self:getPartyMember()]].name
                 print()
-                print("actindex is"..actindex[self:getPartyMember()])
-                self:setCommand(self:getPartyMember(), 2, selected_enemies[self:getPartyMember()]:subtext(actname[self:getPartyMember()]))
+                print("self.encounter.actindex is"..self.encounter.actindex[self:getPartyMember()])
+                self:setCommand(self:getPartyMember(), 2, selected_enemies[self:getPartyMember()]:subtext(self.encounter.actname[self:getPartyMember()]))
             end
             self.doneNavigating = true
             self:setPartyMember(self:getPartyMember() + 1)
@@ -538,9 +719,21 @@ function Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname,
         end
     end
 
-    local remainingDowned = self:handleDowned()
+    local remainingDowned = self:handleDowned() --bool. if all remaining party_members are downed, true.
 
-    return selected_enemies, enemies_to_attack, actname, actindex, remainingDowned
+    --Go back to the Battle UI or move on to executing every command?
+    if (self.doneNavigating and self:getPartyMember() > #self.encounter.party_members) or remainingDowned then
+        self:setPartyMember(0)
+        self:setState("COMMANDS")
+        ExecuteCommands()
+        self.Soul:updatePosArray(nil)
+    elseif self.doneNavigating and self:getState() ~= "BULLETS" and self:getState() ~= "COMMANDS" and self:getState() ~= "ATTACKING" then
+        self.encounter.UIs[self:getPartyMember()]:subtext("* A wild battle commentary appeared!")
+        self.encounter.UIs[self:getPartyMember()]:menuState(self.Soul, 0, 0, "BATTLEUI", {})
+        self:setState("BATTLEUI")
+        self.doneNavigating = false
+        selected_enemy = nil
+    end
 end
 
 return Controller

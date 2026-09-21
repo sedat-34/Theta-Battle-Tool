@@ -58,14 +58,7 @@ local errorMountingLastTime
 
 --TODO Move most of these to the Controller object. The Controller is meant to be the middle-manager for the battle, so it should handle most of these variables.
 local members_to_attack
-local enemies_to_attack
-local battlebars
 
-local actname
-local actindex
-
---Arrays used for submenus:
-local selected_enemies
 
 --Splashscreen stuff goes here
 local SplashScreen = love.graphics.newImage("sprites/ThetaBattleTool-Titlecard.png")
@@ -84,6 +77,7 @@ local escapeHeldTimer = 0
 
 --This object exists purely to let tick know how to cancel the BULLETSCleanup delay
 --This is necessary as without it, BULLETSCleanup gets called at the start of the next battle.
+--This is also the sole reason main has a StartBULLETS function at all.
 
 local tickObjectForBULLETSCleanup
 
@@ -124,12 +118,6 @@ end
 
 local function startBattle()
 
-    members_to_attack = {}
-    enemies_to_attack = {}
-    battlebars = {}
-    actindex = {}
-    selected_enemies = {}
-
     local path = "encounters/"..typedName..".zip"
     encounterdata = love.filesystem.newFileData(path)
 
@@ -166,12 +154,6 @@ function love.update(dt)
 
     if battling then
         Controller:update(dt)
-
-        for i = 1, #battlebars do
-            if battlebars[i] then
-                battlebars[i]:update(dt)
-            end
-        end
 
         tick.update(dt)
 
@@ -247,161 +229,18 @@ local function BULLETSCleanup()
         Controller:setState("BATTLEOVER")
     end
 
-    selected_enemies = {}
     selected_enemy = nil
-    actname = {}
-    actindex = {}
     Controller:BULLETSCleanup()
     collectgarbage("collect")
 
 end
 
-local function StartBULLETS()
+function StartBULLETS()
         --Collect garbage
-        members_to_attack = {}
-        enemies_to_attack = {}
-        battlebars = {}
         collectgarbage("collect")
 
         Controller:StartBULLETS()
         tickObjectForBULLETSCleanup = tick.delay(function() BULLETSCleanup() tickObjectForBULLETSCleanup = nil end, 5)
-        Controller:setState("BULLETS")
-end
-
-local function ExecuteAttack(enemies)
-
-    print("ExecuteAttack()")
-    print("Controller:getPartyMember(): "..Controller:getPartyMember())
-
-    Controller:setState("ATTACKING")
-
-    if #members_to_attack > 0 and #battlebars == 0 then
-        print("members_to_attack: "..#members_to_attack)
-
-        for i = 1, #members_to_attack do
-            local k = 1
-            local baroffsetcoefficient = 1 --Used to position the battlebars correctly and get the correct partyMember index.
-
-            while k < #Controller.encounter.party_members + 1 do
-                if Controller.encounter.party_members[k] == members_to_attack[i] then
-                    baroffsetcoefficient = k
-                    print("baroffsetcoefficient: "..baroffsetcoefficient)
-                end
-                k = k+1
-            end
-
-            battlebars[i] = BattleBar(900+100*baroffsetcoefficient, 738+41*1.5*(baroffsetcoefficient-1), baroffsetcoefficient, members_to_attack[i], enemies_to_attack[i])
-
-        end
-
-    elseif Controller:getPartyMember() <= #battlebars then
-
-        if battlebars[Controller:getPartyMember()] then
-            battlebars[Controller:getPartyMember()]:attack()
-        end
-
-    end
-
-    if Controller:getPartyMember() > #battlebars then
-
-        Controller.doneNavigating = true
-
-        StartBULLETS()
-
-    end
-
-
-end
-
---Don't touch this unless you are CERTAIN you know what you are doing.
---This function handles every command passed through the UI.
---That means all of FIGHT/ACT...MERCY is handled here.
-
-local function ExecuteCommands()
-
-    local CommandReturned = nil
-
-    Controller:setState("COMMANDS")
-
-    print("ExecuteCommands()")
-
-    Controller:setPartyMember(Controller:getPartyMember() + 1)
-
-    local isMemberDowned
-    if Controller.encounter.party_members[Controller:getPartyMember()] then
-        isMemberDowned = Controller.encounter.party_members[Controller:getPartyMember()].hp <= 0
-    end
-
-    if isMemberDowned then
-        if Controller:getPartyMember() == #Controller.encounter.party_members then
-            if #members_to_attack > 0 then
-
-            Controller:setPartyMember(1)
-
-            for i = 1, #Controller.encounter.party_members do
-                Controller.encounter.UIs[i]:subtext("")
-            end
-            Controller:setState("ATTACKING")
-            ExecuteAttack()
-            return
-        else
-            Controller.doneNavigating = true
-            StartBULLETS()
-            return
-        end
-        end
-    end
-
-    print("Controller:getPartyMember() @ COMMANDS: "..Controller:getPartyMember())
-
-    if Controller:getPartyMember() <= #Controller.encounter.party_members then
-        if Controller:getCommand(Controller:getPartyMember(), 1) then
-            Controller.encounter.UIs[Controller:getPartyMember()]:subtext(Controller:getCommand(Controller:getPartyMember(),2))
-            CommandReturned = Controller:runCommand(Controller:getPartyMember(), 1)
-            if CommandReturned then
-                print("Command executed: "..CommandReturned.." by: "..Controller.encounter.party_members[Controller:getPartyMember()].name)
-            end
-        end
-        if CommandReturned == "DEFCOMMAND" then
-            Controller.encounter.party_members[Controller:getPartyMember()].isdefending = true
-            Controller.encounter.party_members[Controller:getPartyMember()]:set_animation("DEFEND")
-            print("Member defended! Now running Executecommands()")
-            ExecuteCommands()
-            return
-        elseif CommandReturned == "ATTACKCOMMAND" then
-            members_to_attack[#members_to_attack+1] = Controller.encounter.party_members[Controller:getPartyMember()]
-            print("Latest member to attack: "..members_to_attack[#members_to_attack].name)
-            ExecuteCommands()
-            return
-        end
-    end
-
-    if Controller:getPartyMember() >= #Controller.encounter.party_members + 1 then
-
-        Controller:BULLETSCleanup()
-
-        for i = 1, #Controller.encounter.party_members do
-            Controller.encounter.party_members[i].hpup = nil
-        end
-
-        if #members_to_attack > 0 then
-
-            Controller:setPartyMember(1)
-
-            for i = 1, #Controller.encounter.party_members do
-                Controller.encounter.UIs[i]:subtext("")
-            end
-            Controller:setState("ATTACKING")
-            ExecuteAttack()
-            return
-        else
-            Controller.doneNavigating = true
-            StartBULLETS()
-            return
-        end
-
-    end
-
 end
 
 function love.mousepressed(x, y, button)
@@ -428,19 +267,10 @@ function love.keypressed(key)
 
     if battling then
 
-        print("Controller's state = "..Controller:getState())
+        Controller:CheckWhetherToRunACommand(key)
+        Controller:heartBeat(key)
 
-        if Controller:getState() == "COMMANDS" then
-
-            if Controller:getPartyMember() <= #Controller.encounter.party_members then
-                ExecuteCommands()
-            end
-
-        elseif Controller:getState() == "ATTACKING" and key == "z" then
-
-            ExecuteAttack(Controller.encounter.enemies)
-
-        elseif Controller:getState() == "BATTLEOVER" then
+        if Controller:getState() == "BATTLEOVER" then
             returnToTitle()
         end
 
@@ -449,24 +279,6 @@ function love.keypressed(key)
             print("Party Member:"..Controller:getPartyMember())
         end
 
-        --This has to run after the above to prevent misfires.
-        local remainingDowned --bool. if all remaining party_members are downed, true.
-
-        selected_enemies, enemies_to_attack, actname, actindex, remainingDowned = Controller:heartBeat(key, selected_enemies, enemies_to_attack, actname, actindex)
-
-        --Go back to the Battle UI or move on to executing every command?
-        if (Controller.doneNavigating and Controller:getPartyMember() > #Controller.encounter.party_members) or remainingDowned then
-            Controller:setPartyMember(0)
-            Controller:setState("COMMANDS")
-            ExecuteCommands()
-            Controller.Soul:updatePosArray(nil)
-        elseif Controller.doneNavigating and Controller:getState() ~= "BULLETS" and Controller:getState() ~= "COMMANDS" and Controller:getState() ~= "ATTACKING" then
-            Controller.encounter.UIs[Controller:getPartyMember()]:subtext("* A wild battle commentary appeared!")
-            Controller.encounter.UIs[Controller:getPartyMember()]:menuState(Controller.Soul, 0, 0, "BATTLEUI", {})
-            Controller:setState("BATTLEUI")
-            Controller.doneNavigating = false
-            selected_enemy = nil
-        end
     else
 
         if key == "return" or key == "kpenter" then
@@ -507,10 +319,6 @@ function love.draw()
 
         for i = 1, #Controller.encounter.UIs do
             Controller.encounter.UIs[i]:draw(Controller:getState(), Controller.encounter.party_members)
-        end
-
-        for i = 1, #battlebars do
-            battlebars[i]:draw()
         end
 
         if escapeHeldTimer > 0 then
