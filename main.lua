@@ -99,6 +99,9 @@ end
 --Technically invalid syntax but equivalent to setting all 3 to nil
 quittingsheetheight, quittingsheetwidth, quittingQuadrantData = nil
 
+--Added to support rendering properly in LÖVE 12.0 onwards.
+local dpi = love.graphics.getDPIScale()
+
 --Debug variables! Currently there's only one, as FPS is the only "debug" value shown on-scren.
 --I don't plan on making these values toggleable in-game
 --As for printed debug statements, they won't be toggleable at all as they can't bother someone who doesn't purposefully launch it via lovec from the terminal.
@@ -110,6 +113,12 @@ local DisplayFPS = false
 ]]
 
 function love.load()
+
+    local loveVersion = love.getVersion()
+
+    if loveVersion > 11 then
+        love.keyboard.setTextInput(true)
+    end
 
     battling = false
     errorMountingLastTime = false
@@ -293,6 +302,9 @@ end
 
 function love.draw()
 
+    love.graphics.push()
+    love.graphics.scale(1/dpi, 1/dpi)
+
     tlfres.beginRendering(WIDTH, HEIGHT)
 
     if battling then
@@ -371,5 +383,7 @@ function love.draw()
     end
 
     tlfres.endRendering()
+
+    love.graphics.pop()
 
 end

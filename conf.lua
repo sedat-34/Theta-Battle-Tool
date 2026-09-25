@@ -6,4 +6,5 @@ function love.conf(t)
     t.window.vsync = true                -- Enable vertical sync
     t.window.resizable = true
     t.window.highdpi = true              -- Enable high DPI mode for retina displays
+    t.highdpi = true                     -- window.highdpi will be depracated in LÖVE 12.0
 end
