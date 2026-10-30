@@ -29,6 +29,9 @@ function Submenu:new(list, targetstatearr, submenutype, targetobject)
 end
 
 function Submenu:draw(localcurrentstate, enemies)
+
+    love.graphics.setFont(Battlefont)
+
     local targetstate = false
 
     for i = 1, #self.targetstatearr do
@@ -44,15 +47,17 @@ function Submenu:draw(localcurrentstate, enemies)
     if targetstate and objectmatches then
         for i = 1, #self.list do
 
-            love.graphics.setFont(Battlefont)
             love.graphics.setColor(1, 1, 1, 1)
 
             if self.submenutype == "enemylist" and enemies[i].sparable then--Sparable enemies show up as Yellow on all enemy submenus
-                love.graphics.setColor(1, 0.85, 0.3, 1)
+                love.graphics.setColor(1, 0.8, 0, 1)
             end
 
             love.graphics.print("* "..self.list[i].name, self.indexpositions[i].x, self.indexpositions[i].y)
 
         end
     end
+
+    love.graphics.setColor(1,1,1)
+
 end
