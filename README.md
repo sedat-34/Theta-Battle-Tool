@@ -33,9 +33,9 @@ Theta Battle Tool is not:
 
 ## Usage
 
-This project is a base project meant to be modified in order to create unique battles. This is achieved by modifying certain parts of the program which were created with modularity in mind, mostly in encounter.lua (or for more advanced users, modification of the entire program).
+TODO: Write usage. 
 
-TODO: Add info about where to modify and how to modify it
+In the meantime, check out encounters/noelle.zip to see what an encounter may look like!
 
 
 ## Credits and Licenses

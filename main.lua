@@ -114,11 +114,7 @@ local DisplayFPS = false
 
 function love.load()
 
-    local loveVersion = love.getVersion()
-
-    if loveVersion > 11 then
         love.keyboard.setTextInput(true)
-    end
 
     battling = false
     errorMountingLastTime = false
@@ -136,6 +132,7 @@ local function startBattle()
         Controller:load()
         battling = true
         errorMountingLastTime = false
+        love.keyboard.setTextInput(false)
     else
         errorMountingLastTime = true
     end
@@ -153,6 +150,7 @@ local function returnToTitle()
     Controller.encounter = {}
     Controller:returnToTitle()
     local success = love.filesystem.unmount(typedName..".zip")
+    love.keyboard.setTextInput(true)
     print("File unmounted:")
     print(success)
     encounterdata = nil
