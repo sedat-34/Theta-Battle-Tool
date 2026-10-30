@@ -101,32 +101,26 @@ function Controller:ProcessAttackCommand()
 end
 
 function Controller:Attack()
+    print("Controller:Attack()")
     if #BattlebarManager.members_to_attack > 0 and #BattlebarManager.battlebars == 0 then
         print("BattlebarManager.members_to_attack: "..#BattlebarManager.members_to_attack)
 
         for i = 1, #BattlebarManager.members_to_attack do
-            local k = 1
             local baroffsetcoefficient = 1 --Used to position the BattlebarManager.battlebars correctly and get the correct partyMember index.
 
-            while k < #Controller.encounter.party_members + 1 do
+            for k = 1, #BattlebarManager.members_to_attack do
                 if Controller.encounter.party_members[k] == BattlebarManager.members_to_attack[i] then
                     baroffsetcoefficient = k
                     print("baroffsetcoefficient: "..baroffsetcoefficient)
                 end
-                k = k+1
+                BattlebarManager.battlebars[k] = BattleBar(900+100*baroffsetcoefficient, 738+41*1.5*(baroffsetcoefficient-1), baroffsetcoefficient, BattlebarManager.members_to_attack[k], BattlebarManager.enemies_to_attack[i])
             end
 
-            BattlebarManager.battlebars[i] = BattleBar(900+100*baroffsetcoefficient, 738+41*1.5*(baroffsetcoefficient-1), baroffsetcoefficient, BattlebarManager.members_to_attack[i], BattlebarManager.enemies_to_attack[i])
-
         end
-
-    elseif Controller:getPartyMember() <= #BattlebarManager.battlebars then
-
-        if BattlebarManager.battlebars[Controller:getPartyMember()] then
-            BattlebarManager.battlebars[Controller:getPartyMember()]:attack()
-        end
-
+    else
+        BattlebarManager:attack()
     end
+
     return Controller:getPartyMember() > #BattlebarManager.battlebars
 end
 
@@ -286,6 +280,8 @@ local function ExecuteAttack()
     if doneAttacking then
 
         Controller.doneNavigating = true
+
+        BattlebarManager:load()
 
         StartBULLETS()
 
