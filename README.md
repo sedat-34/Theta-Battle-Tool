@@ -24,9 +24,9 @@ Theta Battle Tool is not:
 - A framework to create a unique battle system
 - A tool to use unlicensed resources with
 
-## Installation
+## Running from source
 
-1) Install [LÖVE 11.5](https://love2d.org)
+1) Install LÖVE 12.0 from the official love2d GitHub actions page. You will need a github account for this
 2) Download or clone this repository
 3) Open in an IDE of your choice or run the Demo with LÖVE
     - ```love theta-battle-tool```
