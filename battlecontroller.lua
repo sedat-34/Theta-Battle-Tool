@@ -108,7 +108,7 @@ function Controller:Attack()
         for i = 1, #BattlebarManager.members_to_attack do
             local baroffsetcoefficient = 1 --Used to position the BattlebarManager.battlebars correctly and get the correct partyMember index.
 
-            for k = 1, #BattlebarManager.members_to_attack do
+            for k = i, #BattlebarManager.members_to_attack do
                 if Controller.encounter.party_members[k] == BattlebarManager.members_to_attack[i] then
                     baroffsetcoefficient = k
                     print("baroffsetcoefficient: "..baroffsetcoefficient)
