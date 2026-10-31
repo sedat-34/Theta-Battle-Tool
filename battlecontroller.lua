@@ -3,7 +3,7 @@ local BulletManager = require "bulletmanager"
 local BattlebarManager = require "battlebarmanager"
 local selected_enemies
 
-function Controller:load(presence)
+function Controller:load()
     love.graphics.setFont(Battlefont)
     self.encounter = require "encounter"
     self.encounter.current_state = "BATTLEUI"
@@ -13,7 +13,6 @@ function Controller:load(presence)
     self.doneNavigating = false
     self.current_party_member = 1
     self.Soul = require "soul"
-    self.presence = presence--grab the rpc.presence from main.lua.
 
     --Pull data from encounter.lua's schema
 
