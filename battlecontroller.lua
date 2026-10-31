@@ -101,7 +101,6 @@ function Controller:ProcessAttackCommand()
 end
 
 function Controller:Attack()
-    self.presence.
     print("Controller:Attack()")
     if #BattlebarManager.members_to_attack > 0 and #BattlebarManager.battlebars == 0 then
         print("BattlebarManager.members_to_attack: "..#BattlebarManager.members_to_attack)
