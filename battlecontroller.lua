@@ -3,7 +3,7 @@ local BulletManager = require "bulletmanager"
 local BattlebarManager = require "battlebarmanager"
 local selected_enemies
 
-function Controller:load()
+function Controller:load(presence)
     love.graphics.setFont(Battlefont)
     self.encounter = require "encounter"
     self.encounter.current_state = "BATTLEUI"
@@ -13,6 +13,7 @@ function Controller:load()
     self.doneNavigating = false
     self.current_party_member = 1
     self.Soul = require "soul"
+    self.presence = presence--grab the rpc.presence from main.lua.
 
     --Pull data from encounter.lua's schema
 
@@ -101,6 +102,7 @@ function Controller:ProcessAttackCommand()
 end
 
 function Controller:Attack()
+    self.presence.
     print("Controller:Attack()")
     if #BattlebarManager.members_to_attack > 0 and #BattlebarManager.battlebars == 0 then
         print("BattlebarManager.members_to_attack: "..#BattlebarManager.members_to_attack)
@@ -325,6 +327,9 @@ local function ExecuteCommands()
                 StartBULLETS()
                 return
             end
+        else
+            ExecuteCommands()
+            return
         end
     end
 
@@ -718,7 +723,7 @@ function Controller:heartBeat(key)
     local remainingDowned = self:handleDowned() --bool. if all remaining party_members are downed, true.
 
     --Go back to the Battle UI or move on to executing every command?
-    if (self.doneNavigating and self:getPartyMember() > #self.encounter.party_members) or remainingDowned then
+    if (self:getPartyMember() > #self.encounter.party_members) or remainingDowned then
         self:setPartyMember(0)
         self:setState("COMMANDS")
         ExecuteCommands()

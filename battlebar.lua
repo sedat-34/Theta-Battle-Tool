@@ -37,8 +37,5 @@ end
 function BattleBar:update(dt)
     if not self.used then
         self.rectanglex = self.rectanglex - 750*dt
-        if self.rectanglex < -50 then
-            self:attack()
-        end
     end
 end

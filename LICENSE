@@ -22,12 +22,18 @@ This distribution contains code, graphics and other resources from the following
 	* Website: https://github.com/mrdumbguy/theta-battle-tool
 	* License: GNU GPLv3 
 	* Copyright: (c) 2026 Sedat Arıtürk
-	* Notice: "Theta Battle Tool" refers to every file with the extension ".lua" except where otherwise noted within the file.
+	* Notice: "Theta Battle Tool" refers to every file with the extension ".lua" except where otherwise noted within said file or this LICENSE.
 
  - LOVE
 	* Website: https://love2d.org/
 	* License: zlib
 	* Copyright (c) 2006-2026 LOVE Development Team
+
+-  discord-RPC
+    * Website: https://github.com/discord/discord-rpc
+	* License: MIT/Expat
+	* Copyright: 2017 Discord Inc.
+	* Notice: The provided website is for the source repository, as RPC has been depracated.
 
 -  classic.lua
     * Website: https://github.com/rxi/classic
@@ -54,6 +60,11 @@ This distribution contains code, graphics and other resources from the following
 	* License: zlib
 	* Copyright: (c) Unkown Date, Taehl
 	* Notice: Please contact me if this information is incorrect.
+
+- lua-discordRPC
+	* Website: https://github.com/pfirsich/lua-discordRPC
+	* License: MIT/Expat
+	* Copyright: 2018 Joel Schumacher
 
  License text
 

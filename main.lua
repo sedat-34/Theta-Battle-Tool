@@ -12,6 +12,8 @@ local tlfres = require "tlfres"
 require "item"
 require "itemmanager"
 Controller = require "battlecontroller" --The battle middle-manager. Intentionally global.
+rpc = {}
+rpc.discordRPC = require "discordRPC"
 
 if love.filesystem.isFused() then
     local dir = love.filesystem.getSourceBaseDirectory()
@@ -46,8 +48,6 @@ SND_HURT = love.audio.newSource("sfx/snd_hurt1.wav", "static")
 LOST = love.graphics.newImage("sprites/LOST.png")
 RECRUIT = love.graphics.newImage("sprites/RECRUIT.png")
 
---The very culmination of your being ;)
-
 --Place state-tracking variables here
 
 selected_enemy = nil
@@ -56,8 +56,6 @@ selected_enemy = nil
 local battling
 local errorMountingLastTime
 
---TODO Move most of these to the Controller object. The Controller is meant to be the middle-manager for the battle, so it should handle most of these variables.
-local members_to_attack
 
 
 --Splashscreen stuff goes here
@@ -114,7 +112,21 @@ local DisplayFPS = false
 
 function love.load()
 
-        love.keyboard.setTextInput(true)
+
+    rpc.discordRPC.initialize("1565815665007530129", true) --Application IDs should normally not be shared, but not much can be done with a Discord Application ID.
+                                                           --"Oh no! Someone advertised my engine for free!" is not a real problem.
+    local now = os.time(os.date("*t"))
+    print(now)
+    print(os.time())
+    rpc.presence = {
+        details = "Choosing a battle",
+        startTimestamp = now,
+        largeImageKey = "tbt-logo-large",
+    }
+
+    rpc.nextPresenceUpdate = 0
+
+    love.keyboard.setTextInput(true)
 
     battling = false
     errorMountingLastTime = false
@@ -128,6 +140,7 @@ local function startBattle()
 
     if encounterdata then
         love.filesystem.mount(encounterdata, typedName..".zip", "", true)
+        rpc.presence.details = "Playing "..string.upper(typedName)..".zip"
         SplashSong:stop()
         Controller:load()
         battling = true
@@ -149,6 +162,8 @@ local function returnToTitle()
     Controller.encounter.MUS_Battlemusic:stop()
     Controller.encounter = {}
     Controller:returnToTitle()
+    rpc.presence.state = ""
+    rpc.presence.details = "Choosing a battle"
     local success = love.filesystem.unmount(typedName..".zip")
     love.keyboard.setTextInput(true)
     print("File unmounted:")
@@ -206,6 +221,13 @@ function love.update(dt)
                 typedNameTruncCounter = typedNameTruncCounter + dt
             end
         end
+    end
+
+    if rpc.nextPresenceUpdate <= 0 then
+        rpc.nextPresenceUpdate = dt
+        rpc.discordRPC.updatePresence(rpc.presence)
+    else
+        rpc.nextPresenceUpdate = rpc.nextPresenceUpdate - dt
     end
 
 end
