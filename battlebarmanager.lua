@@ -36,6 +36,25 @@ function battlebarmanager:attack()
     end
 end
 
+function battlebarmanager:generateBattlebars(party_members)
+    print("self.members_to_attack: "..#self.members_to_attack)
+
+    for i = 1, #self.members_to_attack do
+        local baroffsetcoefficient = 1 --Used to position the self.battlebars correctly and get the correct partyMember index.
+
+        for k = i, #party_members do
+            if self.battlebars[k] then break end
+            if party_members[k] == self.members_to_attack[i] then
+                baroffsetcoefficient = k
+                print("baroffsetcoefficient: "..baroffsetcoefficient)
+                self.battlebars[i] = BattleBar(900+100*baroffsetcoefficient, 738+41*1.5*(baroffsetcoefficient-1), baroffsetcoefficient, self.members_to_attack[i], self.enemies_to_attack[i])
+                break
+            end
+        end
+
+    end
+end
+
 battlebarmanager:load()
 
 return battlebarmanager
